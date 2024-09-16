@@ -2,83 +2,36 @@
 #include <SDL.h>
 #include <SDL_opengles2.h>
 
-// Vertex shader
-const GLchar* vertexSource =
-    "attribute vec4 position;                      \n"
-    "varying vec3 color;                           \n"
-    "void main()                                   \n"
-    "{                                             \n"
-    "    gl_Position = vec4(position.xyz, 1.0);    \n"
-    "    color = gl_Position.xyz + vec3(0.5);      \n"
-    "}                                             \n";
+#include "renderpass.h"
+#include "vertexbuffer.h"
 
-// Fragment/pixel shader
-const GLchar* fragmentSource =
-    "precision mediump float;                     \n"
-    "varying vec3 color;                          \n"
-    "void main()                                  \n"
-    "{                                            \n"
-    "    gl_FragColor = vec4 ( color, 1.0 );      \n"
-    "}                                            \n";
+#include <iostream>
 
-GLuint initShader()
+class App
 {
-    // Create and compile vertex shader
-    GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexSource, NULL);
-    glCompileShader(vertexShader);
+public:
+    App() { std::cout << "app create " << renderPass.getProgram() << "\n"; }
+    ~App() { printf("app destruct\n"); }
 
-    // Create and compile fragment shader
-    GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentSource, NULL);
-    glCompileShader(fragmentShader);
+    RenderPass      renderPass;
+    VertexBuffer    vertexBuffer;
+};
 
-    // Link vertex and fragment shader into shader program and use it
-    GLuint shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-    glUseProgram(shaderProgram);
-
-    return shaderProgram;
-}
-
-void initGeometry(GLuint shaderProgram)
-{
-    // Create vertex buffer object and copy vertex data into it
-    GLuint vbo;
-    glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    GLfloat vertices[] = 
-    {
-        0.0f, 0.5f, 0.0f,
-        -0.5f, -0.5f, 0.0f,
-        0.5f, -0.5f, 0.0f
-    };
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    // Specify the layout of the shader vertex data (positions only, 3 floats)
-    GLint posAttrib = glGetAttribLocation(shaderProgram, "position");
-    glEnableVertexAttribArray(posAttrib);
-    glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
-}
+std::unique_ptr<App> app = nullptr;
 
 void mainLoop(void* mainLoopArg) 
 {
-    SDL_Window* pWindow = (SDL_Window*)mainLoopArg;
+    SDL_Window* window = (SDL_Window*) mainLoopArg;
 
     int winWidth = 512, winHeight = 512;
-    SDL_GL_GetDrawableSize(pWindow, &winWidth, &winHeight);
+    SDL_GL_GetDrawableSize(window, &winWidth, &winHeight);
     glViewport(0, 0, winWidth, winHeight);   
 
-    // Clear screen
     glClear(GL_COLOR_BUFFER_BIT);
 
-    // Draw the vertex buffer
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    app->renderPass.render();
 
-    // Swap front/back framebuffers
-    SDL_GL_SwapWindow(pWindow);
+    SDL_GL_SwapWindow(window);
 }
 
 int main(int argc, char** argv)
@@ -107,11 +60,12 @@ int main(int argc, char** argv)
     // Get actual GL window size in pixels, in case of high dpi scaling
     SDL_GL_GetDrawableSize(pWindow, &winWidth, &winHeight);
     printf("INFO: GL window size = %dx%d\n", winWidth, winHeight);
+
     glViewport(0, 0, winWidth, winHeight);   
 
-    // Initialize shader and geometry
-    GLuint shaderProgram = initShader();
-    initGeometry(shaderProgram);
+    app = std::make_unique<App>();
+    
+    app->vertexBuffer.bind(app->renderPass.getProgram());
 
     // Start the main loop
     void* mainLoopArg = pWindow;

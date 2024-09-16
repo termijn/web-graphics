@@ -4,7 +4,8 @@ class VertexBuffer
 {
 public:
     VertexBuffer();
-
+    void bind(GLuint program);
+    
 private:
     GLuint vbo;
 };
