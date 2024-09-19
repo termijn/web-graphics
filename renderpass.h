@@ -1,4 +1,5 @@
 #include <SDL_opengles2.h>
+#include <string>
 
 class RenderPass
 {
@@ -11,7 +12,8 @@ public:
     GLuint getProgram();
     
 private:
-    GLuint compileShader (GLenum type, const GLchar* source);
+    GLuint      compileShader (GLenum type, const GLchar* source);
+    std::string readFile(const std::string& name) const;
 
     GLuint vertexShader     = 0;
     GLuint fragmentShader   = 0;    

@@ -6,6 +6,7 @@
 #include "vertexbuffer.h"
 
 #include <iostream>
+#include <fstream>
 
 class App
 {
@@ -36,6 +37,7 @@ void mainLoop(void* mainLoopArg)
 
 int main(int argc, char** argv)
 {
+
     int winWidth = 512, winHeight = 512;
 
     // Create SDL window
@@ -55,7 +57,7 @@ int main(int argc, char** argv)
     printf("INFO: GL version: %s\n", glGetString(GL_VERSION));
 
     // Set clear color to black
-    glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     
     // Get actual GL window size in pixels, in case of high dpi scaling
     SDL_GL_GetDrawableSize(pWindow, &winWidth, &winHeight);

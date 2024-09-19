@@ -1,36 +1,21 @@
 #include "renderpass.h"
 #include <string>
 #include <iostream>
-
-const GLchar* vertexShaderSource =
-    "attribute vec4 position;                      \n"
-    "varying vec3 color;                           \n"
-    "void main()                                   \n"
-    "{                                             \n"
-    "    gl_Position = vec4(position.xyz, 1.0);    \n"
-    "    color = gl_Position.xyz + vec3(0.5);      \n"
-    "}                                             \n";
-
-// Fragment/pixel shader
-const GLchar* fragmentShaderSource =
-    "precision mediump float;                     \n"
-    "varying vec3 color;                          \n"
-    "void main()                                  \n"
-    "{                                            \n"
-    "    gl_FragColor = vec4 ( color, 1.0 );      \n"
-    "}                                            \n";
+#include <fstream>
 
 RenderPass::RenderPass()
 {    
-    std::cout << "Create render pass \n";
-    fragmentShader  = compileShader(GL_VERTEX_SHADER,   vertexShaderSource);
-    vertexShader    = compileShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
+    std::string vertexSource    = readFile("/shaders/vertex.glsl");
+    std::string fragmentSource  = readFile("/shaders/frag.glsl");
+
+    fragmentShader  = compileShader(GL_VERTEX_SHADER,   vertexSource.c_str());
+    vertexShader    = compileShader(GL_FRAGMENT_SHADER, fragmentSource.c_str());
 
     program = glCreateProgram();
-    glAttachShader(program, vertexShader);
-    glAttachShader(program, fragmentShader);
-    glLinkProgram(program);   
-    glUseProgram(program);
+    glAttachShader  (program, vertexShader);
+    glAttachShader  (program, fragmentShader);
+    glLinkProgram   (program);
+    glUseProgram    (program);
 }
 
 RenderPass::~RenderPass()
@@ -72,4 +57,23 @@ GLuint RenderPass::compileShader(GLenum type, const GLchar* source)
     }
 
     return shader;
+}
+
+std::string RenderPass::readFile(const std::string &name) const
+{
+    std::string result;
+    std::ifstream stream(name);
+    if (!stream.is_open()) 
+    {
+        std::cerr << "Error: Could not open " << name  << std::endl;
+        return result;
+    }
+    std::string line;
+
+    while (std::getline(stream, line)) 
+    {
+        result += line + "\n";
+    }
+    stream.close();
+    return result;
 }
