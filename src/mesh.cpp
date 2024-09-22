@@ -29,7 +29,7 @@ void Mesh::cube(float size)
 
 void Mesh::noisySphere(float radius, int rings, int sectors, float noiseAmplitude)
 {
-     vertices.clear();
+    vertices.clear();
     indices.clear();
 
     // Generate vertices

@@ -1,4 +1,5 @@
-# emscripten based webgl viewer
+# emscripten based webgl viewer library
+
 
 ## tools
 See https://floooh.github.io/2023/11/11/emscripten-ide.html
@@ -6,6 +7,11 @@ use Groove (windows) or Homebrew (mac OS) to install:
 - git
 - cmake
 - ninja
+
+## Dependencies
+- glm (https://github.com/g-truc/glm/tree/master)
+- WebGL
+- SDL2
 
 ## VS Code extensions
 - ms-vscode.cpptools
@@ -15,6 +21,3 @@ use Groove (windows) or Homebrew (mac OS) to install:
 
 ## start http server
 python3 -m http.server
-
-## todo
-add glm: https://github.com/g-truc/glm/tree/master

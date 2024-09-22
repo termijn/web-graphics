@@ -25,6 +25,11 @@ private:
     GLuint fragmentShader   = 0;
 
     GLint       locationViewUniform;
+    GLint       locationLightDirection;
+    GLint       locationLightColor;
+    GLint       locationRoughness;
+    GLint       locationMetallic;
+
     glm::mat4   view;
 
     GLuint program;

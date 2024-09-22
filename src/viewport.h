@@ -19,9 +19,11 @@ public:
 
 private:
     Scheduler& scheduler;
+
     std::chrono::time_point<std::chrono::steady_clock> startTime;
 
-    SDL_Window* window;
+    SDL_Window*     window;
+    
     Mesh            mesh;
     VertexBuffer    vertexBuffer;
     RenderPass      renderPass  = RenderPass(vertexBuffer);

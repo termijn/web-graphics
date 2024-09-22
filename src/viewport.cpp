@@ -7,7 +7,7 @@ Viewport::Viewport(Scheduler& scheduler_)
     scheduler_.viewports.emplace_back(this);
 
     std::cout << "create viewport" << std::endl;
-    
+
     int winWidth = 512, winHeight = 512;
     window = 
         SDL_CreateWindow("Viewport", 
@@ -33,7 +33,7 @@ Viewport::Viewport(Scheduler& scheduler_)
 
     glViewport(0, 0, winWidth, winHeight);
 
-    mesh.knot(0.3, 100, 100);
+    mesh.noisySphere(0.5f, 80, 80, 0.1f);
     vertexBuffer.init();
     vertexBuffer.setMesh(&mesh);
     renderPass.init();
