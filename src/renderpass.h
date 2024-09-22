@@ -9,6 +9,8 @@ public:
     RenderPass(VertexBuffer& vertexBuffer);
     ~RenderPass();
 
+    void init();
+
     void render(double elapsed);
 
     GLuint getProgram();

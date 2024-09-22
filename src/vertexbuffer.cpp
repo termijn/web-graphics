@@ -4,8 +4,13 @@
 
 VertexBuffer::VertexBuffer()
 {
+}
+
+void VertexBuffer::init()
+{
     glGenBuffers(1, &vertexBufferObject);
     glGenBuffers(1, &elementBufferObject);
+    glCheckError();
 }
 
 void VertexBuffer::bind(GLuint program)

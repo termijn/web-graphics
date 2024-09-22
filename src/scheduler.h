@@ -1,11 +1,21 @@
 #pragma once
 
+#include <vector>
+
+class Viewport;
+
 class Scheduler
 {
+friend class Viewport;
+
 public:
     Scheduler();
     virtual ~Scheduler();
 
-private:
+    void run();
 
+    void tick();
+
+private:
+    std::vector<Viewport*> viewports;
 };

@@ -8,9 +8,17 @@
 
 using namespace glm;
 
-RenderPass::RenderPass(VertexBuffer& vertexBuffer_)
+RenderPass::RenderPass(VertexBuffer &vertexBuffer_)
     : vertexBuffer(vertexBuffer_)
-{    
+{
+}
+
+RenderPass::~RenderPass()
+{
+}
+
+void RenderPass::init()
+{
     std::string vertexSource    = readFile("/shaders/vertex.glsl");
     std::string fragmentSource  = readFile("/shaders/frag.glsl");
 
@@ -23,11 +31,6 @@ RenderPass::RenderPass(VertexBuffer& vertexBuffer_)
     glLinkProgram   (program);
 
     locationViewUniform = glGetUniformLocation(program, "view");
-}
-
-RenderPass::~RenderPass()
-{
-    
 }
 
 void RenderPass::render(double elapsed)

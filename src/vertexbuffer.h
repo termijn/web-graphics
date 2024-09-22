@@ -7,6 +7,8 @@ class VertexBuffer
 {
 public:
     VertexBuffer();
+
+    void init();
     void bind(GLuint program);
 
     void setMesh(const Mesh* mesh);
