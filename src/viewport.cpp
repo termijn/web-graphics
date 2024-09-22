@@ -35,6 +35,8 @@ Viewport::Viewport(Scheduler& scheduler_)
 
     mesh.noisySphere(0.5f, 80, 80, 0.1f);
     //mesh.knot(0.4, 40,40);
+    //mesh.sphere(0.4, 50, 50);
+    //mesh.cube(0.4);
     vertexBuffer.init();
     vertexBuffer.setMesh(&mesh);
 

@@ -116,3 +116,38 @@ void Mesh::knot(float radius, int segments, int sides)
         }
     }
 }
+
+void Mesh::sphere(float radius, int rings, int sectors)
+{
+    const float R = 1.0f / (float)(rings - 1);
+    const float S = 1.0f / (float)(sectors - 1);
+
+    // Clear previous data
+    vertices.clear();
+    indices.clear();
+
+    // Generate vertices
+    for (unsigned int r = 0; r < rings; r++) {
+        for (unsigned int s = 0; s < sectors; s++) {
+            float y = sin(-M_PI_2 + M_PI * r * R); // y = sin(theta)
+            float x = cos(M_PI * s * S) * cos(M_PI * r * R); // x = cos(theta) * cos(phi)
+            float z = cos(M_PI * s * S) * sin(M_PI * r * R); // z = cos(theta) * sin(phi)
+
+            Vertex vertex;
+            vertex.position = glm::vec4(x * radius, y * radius, z * radius, 1.0f);
+            vertex.normal = glm::vec4(x, y, z, 0.0f); // Normal is the same as the position for a sphere
+            vertices.push_back(vertex);
+        }
+    }
+
+    // Generate indices
+    for (unsigned int r = 0; r < rings - 1; r++) {
+        for (unsigned int s = 0; s < sectors - 1; s++) {
+            unsigned int curRow = r * sectors;
+            unsigned int nextRow = (r + 1) * sectors;
+
+            indices.push_back(glm::u16vec3(curRow + s, nextRow + s, nextRow + (s + 1)));
+            indices.push_back(glm::u16vec3(curRow + s, nextRow + (s + 1), curRow + (s + 1)));
+        }
+    }
+}
