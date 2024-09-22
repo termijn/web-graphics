@@ -5,28 +5,33 @@ project(WebGL)
 add_definitions(-std=c++20)
 set(CMAKE_CXX_STANDARD 20)
 
-if (DEFINED EMSCRIPTEN)
-    add_executable(Viewer 
-        viewer.cpp 
-        renderpass.cpp
-        vertexbuffer.cpp)
+file(GLOB_RECURSE ViewerSRC ${CMAKE_CURRENT_SOURCE_DIR}/src *.cpp)
 
-    # Set the output file extension to .js (for WebAssembly)
+if (DEFINED EMSCRIPTEN)
+    add_executable(Viewer ${ViewerSRC})
+
     set(CMAKE_EXECUTABLE_SUFFIX .html)
 
-    # Target compile options and link options specific to WebAssembly with WebGL and SDL2
-    target_compile_options(Viewer PUBLIC -Os -sUSE_SDL=2)
+    target_compile_options(Viewer PUBLIC 
+        -Os 
+        -sUSE_SDL=2)
     target_link_options(Viewer PUBLIC
+        -sMIN_WEBGL_VERSION=2
+        -sMAX_WEBGL_VERSION=2
         -sUSE_WEBGL2=1 
         -sUSE_SDL=2 
         -sALLOW_MEMORY_GROWTH=1 
-        -sFULL_ES2=1 
+        -sFULL_ES3=1 
         -sWASM=1 
         --shell-file=../index.html
         --preload-file=${CMAKE_CURRENT_SOURCE_DIR}/shaders@/shaders
         )
-    
+    set_property(TARGET Viewer PROPERTY LINK_DEPENDS 
+        ${CMAKE_CURRENT_SOURCE_DIR}/shaders/frag.glsl
+        ${CMAKE_CURRENT_SOURCE_DIR}/shaders/vertex.glsl
+    )
+    target_compile_definitions(Viewer PUBLIC "$<$<CONFIG:DEBUG>:DEBUG>")
 
-else()
-    add_library(Viewer SHARED calc.cpp)
 endif()
+
+target_include_directories(Viewer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/ext)
