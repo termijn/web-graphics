@@ -12,9 +12,9 @@ out vec3 fragPosition;
 
 void main()
 {
-    viewPos = (vec4(0.0,0.0,0.0,1.0) * view).xyz;
-    Normal = mat3(transpose(inverse(mat4(1.0)))) * normal.xyz;  // Normal transformation
-    color = position.xyz + vec3(0.5);
-    gl_Position = position * view;
-    fragPosition = vec3(/*model * */ position);
+    viewPos         = (vec4(0.0,0.0,0.0,1.0) * view).xyz;
+    Normal          = mat3(transpose(inverse(mat4(1.0)))) * normal.xyz;  // Normal transformation
+    color           = position.xyz + vec3(0.5);
+    gl_Position     = position * view;
+    fragPosition    = vec3(/*model * */ position);
 }

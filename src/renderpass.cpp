@@ -102,18 +102,16 @@ std::string RenderPass::readFile(const std::string &name) const
 void RenderPass::setUniforms(double elapsed)
 {
     view = glm::rotate(glm::mat4(1.0f), glm::radians((float)elapsed * 90.0f), glm::vec3(1.0f, 1.0f, 0.0f));
-    glUniformMatrix4fv(locationViewUniform, 1, GL_FALSE, value_ptr(view));
+    view = glm::rotate(view, glm::radians((float)elapsed * 60.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
-    // glm::vec3 lightDirection(1,1,-1);
-    // glUniformMatrix3fv(locationLightDirection, 1, GL_FALSE, value_ptr(lightDirection));
+    glUniformMatrix4fv(locationViewUniform, 1, GL_FALSE, value_ptr(view));
 
     glm::vec4 lightDir(-0.3,-0.3,-1.0, 0.0);
     lightDir = lightDir * glm::inverse(view);
 
     glUniform3f(locationLightDirection, lightDir.x, lightDir.y, lightDir.z); // Light coming from above
-    // Set the light color (e.g., white light)
-    glUniform3f(locationLightColor, 1.0f, 1.0f, 1.0f); // White light
+    glUniform3f(locationLightColor, 1.0f, 1.0f, 1.0f);
 
-    glUniform1f(locationMetallic, 0.5f);
-    glUniform1f(locationRoughness, 0.8f);
+    glUniform1f(locationMetallic, 0.3f);
+    glUniform1f(locationRoughness, 0.4f);
 }

@@ -34,8 +34,10 @@ Viewport::Viewport(Scheduler& scheduler_)
     glViewport(0, 0, winWidth, winHeight);
 
     mesh.noisySphere(0.5f, 80, 80, 0.1f);
+    //mesh.knot(0.4, 40,40);
     vertexBuffer.init();
     vertexBuffer.setMesh(&mesh);
+
     renderPass.init();
 }
 
