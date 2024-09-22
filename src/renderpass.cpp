@@ -3,6 +3,10 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/matrix_transform.hpp> 
+
+using namespace glm;
 
 RenderPass::RenderPass(VertexBuffer& vertexBuffer_)
     : vertexBuffer(vertexBuffer_)
@@ -17,7 +21,8 @@ RenderPass::RenderPass(VertexBuffer& vertexBuffer_)
     glAttachShader  (program, vertexShader);
     glAttachShader  (program, fragmentShader);
     glLinkProgram   (program);
-    glUseProgram    (program);
+
+    locationViewUniform = glGetUniformLocation(program, "view");
 }
 
 RenderPass::~RenderPass()
@@ -25,10 +30,14 @@ RenderPass::~RenderPass()
     
 }
 
-void RenderPass::render()
+void RenderPass::render(double elapsed)
 {
     glUseProgram(program);
     vertexBuffer.bind(program);
+    setUniforms(elapsed);
+
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
 
     glDrawElements(GL_TRIANGLES, vertexBuffer.getMesh().indices.size() * 3, GL_UNSIGNED_SHORT, 0);
     glCheckError(); 
@@ -81,4 +90,10 @@ std::string RenderPass::readFile(const std::string &name) const
     }
     stream.close();
     return result;
+}
+
+void RenderPass::setUniforms(double elapsed)
+{
+    view = glm::rotate(glm::mat4(1.0f), glm::radians((float)elapsed * 90.0f), glm::vec3(1.0f, 1.0f, 0.0f));
+    glUniformMatrix4fv(locationViewUniform, 1, GL_FALSE, value_ptr(view));
 }

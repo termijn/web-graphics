@@ -1,6 +1,7 @@
 #include <emscripten.h>
 #include <SDL.h>
 #include <SDL_opengles2.h>
+#include <chrono>
 
 #include "renderpass.h"
 #include "vertexbuffer.h"
@@ -23,6 +24,7 @@ public:
 
 std::unique_ptr<App> app = nullptr;
 Mesh mesh;
+std::chrono::time_point<std::chrono::steady_clock> startTime;
 
 void mainLoop(void* mainLoopArg) 
 {
@@ -30,18 +32,21 @@ void mainLoop(void* mainLoopArg)
 
     int winWidth = 512, winHeight = 512;
     SDL_GL_GetDrawableSize(window, &winWidth, &winHeight);
-    glViewport(0, 0, winWidth, winHeight);   
+    glViewport(0, 0, winWidth, winHeight);
 
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    app->renderPass.render();
+    auto time = std::chrono::steady_clock::now() - startTime;
+    auto milli = std::chrono::duration_cast<std::chrono::milliseconds>(time).count();
+
+    app->renderPass.render(milli / 1000.0);
 
     SDL_GL_SwapWindow(window);
 }
 
 int main(int argc, char** argv)
 {
-
+    startTime = std::chrono::steady_clock::now();
     int winWidth = 512, winHeight = 512;
 
     // Create SDL window
@@ -61,7 +66,7 @@ int main(int argc, char** argv)
     printf("INFO: GL version: %s\n", glGetString(GL_VERSION));
 
     // Set clear color to black
-    glClearColor(0.8f, 1.0f, 1.0f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     
     // Get actual GL window size in pixels, in case of high dpi scaling
     SDL_GL_GetDrawableSize(pWindow, &winWidth, &winHeight);
@@ -71,7 +76,8 @@ int main(int argc, char** argv)
 
     app = std::make_unique<App>();
 
-    mesh.noisySphere(0.5f, 20, 20, 0.2f);
+    //mesh.noisySphere(0.5f, 20, 20, 0.2f);
+    mesh.knot(0.3, 100, 100);
 
     app->vertexBuffer.setMesh(&mesh);
 

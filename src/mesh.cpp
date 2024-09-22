@@ -67,3 +67,52 @@ void Mesh::noisySphere(float radius, int rings, int sectors, float noiseAmplitud
         }
     }
 }
+
+void Mesh::knot(float radius, int segments, int sides)
+{
+    vertices.clear();
+    indices.clear();
+
+    for (int i = 0; i <= segments; ++i)
+    {
+        float t = i * 2.0f * M_PI / segments;
+
+        // Parametric equations for the knot
+        glm::vec3 center = glm::vec3(
+            (2.0f + cos(3.0f * t)) * cos(2.0f * t),
+            (2.0f + cos(3.0f * t)) * sin(2.0f * t),
+            sin(3.0f * t)
+        ) * radius;
+
+        for (int j = 0; j <= sides; ++j)
+        {
+            float s = j * 2.0f * M_PI / sides;
+
+            // Slightly perturb around the center of the knot to create thickness
+            glm::vec3 offset = glm::vec3(
+                cos(s),
+                sin(s),
+                0.0f
+            ) * 0.1f; // thickness of the knot
+
+            glm::vec4 position = glm::vec4(center + offset, 1.0f);
+            glm::vec4 normal = glm::vec4(glm::normalize(offset), 0.0f);
+
+            vertices.push_back({position, normal});
+        }
+    }
+
+    // Create indices to form quads or triangles between the segments and sides
+    for (int i = 0; i < segments; ++i)
+    {
+        for (int j = 0; j < sides; ++j)
+        {
+            int nextI = (i + 1) % segments;
+            int nextJ = (j + 1) % sides;
+
+            // Define triangles or quads (two triangles per quad)
+            indices.push_back(glm::u16vec3(i * sides + j, nextI * sides + j, i * sides + nextJ));
+            indices.push_back(glm::u16vec3(nextI * sides + j, nextI * sides + nextJ, i * sides + nextJ));
+        }
+    }
+}

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <map>
 #include <glm/glm.hpp>
 
 class Space
@@ -10,14 +11,16 @@ public:
     glm::mat4 fromRoot  = glm::mat4(1.0);
 
     glm::mat4 to            (const Space& target) const;
-    glm::vec3 transformPos  (const glm::vec3& position, const Space& targetSpace) const;
-    glm::vec3 transformDir  (const glm::vec3& direction, const Space& targetSpace) const;
+    glm::vec3 transformPos  (const glm::vec3& position,     const Space& targetSpace) const;
+    glm::vec3 transformDir  (const glm::vec3& direction,    const Space& targetSpace) const;
 
 };
 
 class Object
 {
 public:
+    class ChangeDetector;
+
     Object();
     explicit Object(const Object& parent);
 
@@ -30,8 +33,11 @@ public:
 
     Space getSpace() const;
 
+    int getRevision() const;
+
 private:
-    const Object*   parent = nullptr;
+    int             revision    = 0;
+    const Object*   parent      = nullptr;
     
     mutable     Space space;
     glm::mat4   toParent    = glm::mat4(1.0);
@@ -40,4 +46,18 @@ private:
 
     void updateTransforms() const;
     void removeFromParent();
+
+};
+
+// TODO detects if the transforms from o1 to o2 have changed.
+class Object::ChangeDetector
+{
+public:
+    ChangeDetector(const Object& o1, const Object& o2);
+
+    bool isChanged() const;
+
+private:
+    std::map<Object*, int> revisionCache;
+
 };

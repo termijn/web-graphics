@@ -18,4 +18,5 @@ public:
 
     void cube(float size);
     void noisySphere(float radius, int rings, int sectors, float noiseAmplitude);
+    void knot(float radius, int segments, int sides);
 };
