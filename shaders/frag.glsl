@@ -14,14 +14,14 @@ in vec3 color;        // Base color of the material
 out vec4 FragColor;
 
 // PBR parameters
-uniform float metallic; // Metallic factor [0, 1]
-uniform float roughness; // Roughness factor [0, 1]
+uniform float metallic;   // Metallic factor [0, 1]
+uniform float roughness;  // Roughness factor [0, 1]
 
 #define M_PI 3.1415926535897932384626433832795
 
 void main()
 {
-      // Normalize vectors
+    // Normalize vectors
     vec3 norm = normalize(Normal);
     vec3 lightDir = normalize(lightDirection);
     vec3 viewDir = normalize(viewPos - fragPosition);
@@ -51,11 +51,11 @@ void main()
 
     // Combine results
     vec3 diffuseColor = color * lightColor * diffuse;
-    vec3 specularColor = lightColor * (D * F * G);   //lightColor * (D * F * G) / (4.0 * max(dot(norm, lightDir), 0.0) * max(dot(norm, viewDir), 0.0));
+
+    vec3 specularColor = lightColor * (D * F * G) / (4.0 * max(dot(norm, lightDir), 0.000) * max(dot(norm, viewDir), 0.000));
+    specularColor = smoothstep(specularColor, vec3(0.0), vec3(1.0));
 
     // Final color
     vec3 finalColor = diffuseColor + specularColor * (1.0 - metallic); // Adjust based on metallic
     FragColor = vec4(finalColor, 1.0);
-
-    //FragColor = vec4(norm * 0.5 + 0.5, 1.0); // Visualize normals
 } 

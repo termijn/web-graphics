@@ -35,13 +35,15 @@ void RenderPass::init()
     locationLightDirection  = glGetUniformLocation(program, "lightDirection");
     locationMetallic        = glGetUniformLocation(program, "metallic");
     locationRoughness       = glGetUniformLocation(program, "roughness");
+    locationProjection      = glGetUniformLocation(program, "projection");
+    locationModel           = glGetUniformLocation(program, "model");
 }
 
-void RenderPass::render(double elapsed)
+void RenderPass::render(double elapsed, float aspectRatio)
 {
     glUseProgram(program);
     vertexBuffer.bind(program);
-    setUniforms(elapsed);
+    setUniforms(elapsed, aspectRatio);
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
@@ -99,19 +101,28 @@ std::string RenderPass::readFile(const std::string &name) const
     return result;
 }
 
-void RenderPass::setUniforms(double elapsed)
+void RenderPass::setUniforms(double elapsed, float aspectRatio)
 {
-    view = glm::rotate(glm::mat4(1.0f), glm::radians((float)elapsed * 90.0f), glm::vec3(1.0f, 1.0f, 0.0f));
-    view = glm::rotate(view, glm::radians((float)elapsed * 60.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-
+    view = mat4(1.0);
     glUniformMatrix4fv(locationViewUniform, 1, GL_FALSE, value_ptr(view));
 
-    glm::vec4 lightDir(-0.3,-0.3,-1.0, 0.0);
-    lightDir = lightDir * glm::inverse(view);
+    glm::vec4 lightDir(0.5,0.5,1.0, 0.0);
+    //lightDir = lightDir * glm::inverse(view);
 
     glUniform3f(locationLightDirection, lightDir.x, lightDir.y, lightDir.z); // Light coming from above
     glUniform3f(locationLightColor, 1.0f, 1.0f, 1.0f);
 
-    glUniform1f(locationMetallic, 0.3f);
-    glUniform1f(locationRoughness, 0.4f);
+    glUniform1f(locationMetallic, 0.5f);
+    glUniform1f(locationRoughness, 0.3f);
+
+    projection = glm::perspective(glm::radians(35.0f), aspectRatio, 0.1f, 100.0f);
+    glUniformMatrix4fv(locationProjection, 1, GL_FALSE, value_ptr(projection));
+
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(0, 0, -50));
+    model = glm::rotate(model, glm::radians((float)elapsed * 60.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    model = glm::rotate(model, glm::radians((float)elapsed * 90.0f), glm::vec3(1.0f, 1.0f, 0.0f));
+
+    glUniformMatrix4fv(locationModel, 1, GL_FALSE, value_ptr(model));
+
 }

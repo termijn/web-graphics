@@ -25,7 +25,7 @@ Viewport::Viewport(Scheduler& scheduler_)
     printf("INFO: GL version: %s\n", glGetString(GL_VERSION));
 
     // Set clear color to black
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     
     // Get actual GL window size in pixels, in case of high dpi scaling
     SDL_GL_GetDrawableSize(window, &winWidth, &winHeight);
@@ -33,10 +33,10 @@ Viewport::Viewport(Scheduler& scheduler_)
 
     glViewport(0, 0, winWidth, winHeight);
 
-    mesh.noisySphere(0.5f, 80, 80, 0.1f);
-    //mesh.knot(0.4, 40,40);
-    //mesh.sphere(0.4, 50, 50);
-    //mesh.cube(0.4);
+    //mesh.noisySphere(5.0f, 80, 80, 2.0f);
+    mesh.knot(3, 2, 140,140);
+    //mesh.sphere(5, 50, 50);
+    //mesh.cube(5);
     vertexBuffer.init();
     vertexBuffer.setMesh(&mesh);
 
@@ -60,7 +60,7 @@ void Viewport::render()
     auto time   = std::chrono::steady_clock::now() - startTime;
     auto milli  = std::chrono::duration_cast<std::chrono::milliseconds>(time).count();
 
-    renderPass.render(milli / 1000.0);
+    renderPass.render(milli / 1000.0, (float)winWidth / (float)winHeight);
 
     SDL_GL_SwapWindow(window);
 }

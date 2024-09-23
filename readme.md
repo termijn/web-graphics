@@ -1,5 +1,6 @@
-# emscripten based webgl viewer library
+# emscripten based webgl 2 renderer
 
+![A knot mesh](/images/screenshot.png)
 
 ## tools
 See https://floooh.github.io/2023/11/11/emscripten-ide.html
@@ -18,6 +19,3 @@ use Groove (windows) or Homebrew (mac OS) to install:
 - ms-vscode.cmake-tools
 - ms-vscode.wasm-dwarf-debugging
 - ms-vscode.live-server
-
-## start http server
-python3 -m http.server
