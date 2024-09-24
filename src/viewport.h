@@ -8,6 +8,9 @@
 #include "scheduler.h"
 #include "vertexbuffer.h"
 #include "renderpass.h"
+#include "objects/object.h"
+
+class Renderable;
 
 class Viewport
 {
@@ -15,17 +18,17 @@ public:
     Viewport(Scheduler& scheduler);
     ~Viewport();
 
+    void attachCamera(Object& camera);
+    void attachRenderable(const Renderable& renderable);
+
     void render();
 
 private:
-    Scheduler& scheduler;
+    Scheduler&      scheduler;
+    SDL_Window*     window = nullptr;
+    Object*         camera = nullptr;
 
-    std::chrono::time_point<std::chrono::steady_clock> startTime;
+    RenderPass      renderPass;
 
-    SDL_Window*     window;
-    
-    Mesh            mesh;
-    VertexBuffer    vertexBuffer;
-    RenderPass      renderPass  = RenderPass(vertexBuffer);
-
+    std::vector<const Renderable*> renderables;
 };

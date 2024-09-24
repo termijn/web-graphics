@@ -19,8 +19,6 @@ public:
 class Object
 {
 public:
-    class ChangeDetector;
-
     Object();
     explicit Object(const Object& parent);
 
@@ -33,31 +31,15 @@ public:
 
     Space getSpace() const;
 
-    int getRevision() const;
-
 private:
-    int             revision    = 0;
     const Object*   parent      = nullptr;
     
-    mutable     Space space;
-    glm::mat4   toParent    = glm::mat4(1.0);
+    mutable Space   space;
+    glm::mat4       toParent    = glm::mat4(1.0);
 
     mutable std::vector<const Object*> children;
 
     void updateTransforms() const;
     void removeFromParent();
-
-};
-
-// TODO detects if the transforms from o1 to o2 have changed.
-class Object::ChangeDetector
-{
-public:
-    ChangeDetector(const Object& o1, const Object& o2);
-
-    bool isChanged() const;
-
-private:
-    std::map<Object*, int> revisionCache;
 
 };

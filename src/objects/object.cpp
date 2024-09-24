@@ -23,31 +23,23 @@ void Object::adopt(const Object& parent_)
     parent->children.emplace_back(this);
 
     updateTransforms();
-    revision++;
 }
 
 void Object::orphan()
 {
    removeFromParent();
    updateTransforms();
-   revision++;
 }
 
 void Object::setTransform(const glm::mat4 &toParent_)
 {
     toParent = toParent_;
     updateTransforms();
-    revision++;
 }
 
 Space Object::getSpace() const
 {
     return space;
-}
-
-int Object::getRevision() const
-{
-    return revision;
 }
 
 void Object::updateTransforms() const

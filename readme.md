@@ -1,6 +1,12 @@
-# emscripten based webgl 2 renderer
+# Emscripten based webgl 2 renderer
+
+A web renderer aimed at displaying and interacting with 3d scenes.
 
 ![A knot mesh](/images/screenshot.png)
+
+## Getting started
+Before opening vs code, first call
+`PS C:\..\web\emsdk> .\emcmdprompt.bat`
 
 ## tools
 See https://floooh.github.io/2023/11/11/emscripten-ide.html

@@ -1,7 +1,9 @@
 #include <emscripten.h>
 
 #include "scheduler.h"
+#include "animator.h"
 #include "viewport.h"
+#include "animator.h"
 
 void mainLoop(void* mainLoopArg)
 {
@@ -23,8 +25,9 @@ void Scheduler::run()
 
 void Scheduler::tick()
 {
+    for (Animator* animator: animators)
+        animator->animate();
+
     for (Viewport* viewport: viewports)
-    {
         viewport->render();
-    }
 }

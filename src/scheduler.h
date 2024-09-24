@@ -3,10 +3,12 @@
 #include <vector>
 
 class Viewport;
+class Animator;
 
 class Scheduler
 {
 friend class Viewport;
+friend class Animator;
 
 public:
     Scheduler();
@@ -18,4 +20,5 @@ public:
 
 private:
     std::vector<Viewport*> viewports;
+    std::vector<Animator*> animators;
 };

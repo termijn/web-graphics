@@ -8,8 +8,7 @@
 
 using namespace glm;
 
-RenderPass::RenderPass(VertexBuffer &vertexBuffer_)
-    : vertexBuffer(vertexBuffer_)
+RenderPass::RenderPass()
 {
 }
 
@@ -39,17 +38,26 @@ void RenderPass::init()
     locationModel           = glGetUniformLocation(program, "model");
 }
 
-void RenderPass::render(double elapsed, float aspectRatio)
+void RenderPass::render(float aspectRatio, const glm::mat4& view_, const std::vector<const Renderable*>& renderables)
 {
+    view = view_;
+
     glUseProgram(program);
-    vertexBuffer.bind(program);
-    setUniforms(elapsed, aspectRatio);
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
 
-    glDrawElements(GL_TRIANGLES, vertexBuffer.getMesh().indices.size() * 3, GL_UNSIGNED_SHORT, 0);
-    glCheckError(); 
+    for (const Renderable* renderable : renderables)
+    {
+        VertexBuffer& vertexBuffer = vertexBufferPool.get(renderable);
+        vertexBuffer.setMesh(&renderable->mesh);
+        vertexBuffer.bind(program);
+
+        setUniforms(aspectRatio, *renderable);
+
+        glDrawElements(GL_TRIANGLES, vertexBuffer.getMesh().indices.size() * 3, GL_UNSIGNED_SHORT, 0);
+        glCheckError();
+    }
 }
 
 GLuint RenderPass::getProgram()
@@ -101,28 +109,23 @@ std::string RenderPass::readFile(const std::string &name) const
     return result;
 }
 
-void RenderPass::setUniforms(double elapsed, float aspectRatio)
+void RenderPass::setUniforms(float aspectRatio, const Renderable& renderable)
 {
-    view = mat4(1.0);
     glUniformMatrix4fv(locationViewUniform, 1, GL_FALSE, value_ptr(view));
 
-    glm::vec4 lightDir(0.5,0.5,1.0, 0.0);
-    //lightDir = lightDir * glm::inverse(view);
+    glm::vec4 lightDir(-0.3, -0.3, -1.0, 0.0);
+    lightDir = lightDir;
 
-    glUniform3f(locationLightDirection, lightDir.x, lightDir.y, lightDir.z); // Light coming from above
+    glUniform3f(locationLightDirection, lightDir.x, lightDir.y, lightDir.z);
     glUniform3f(locationLightColor, 1.0f, 1.0f, 1.0f);
 
-    glUniform1f(locationMetallic, 0.5f);
-    glUniform1f(locationRoughness, 0.3f);
+    glUniform1f(locationMetallic, renderable.material.metallic);
+    glUniform1f(locationRoughness, renderable.material.roughness);
 
     projection = glm::perspective(glm::radians(35.0f), aspectRatio, 0.1f, 100.0f);
     glUniformMatrix4fv(locationProjection, 1, GL_FALSE, value_ptr(projection));
 
-    model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(0, 0, -50));
-    model = glm::rotate(model, glm::radians((float)elapsed * 60.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    model = glm::rotate(model, glm::radians((float)elapsed * 90.0f), glm::vec3(1.0f, 1.0f, 0.0f));
-
+    model = renderable.object.getSpace().toRoot;
     glUniformMatrix4fv(locationModel, 1, GL_FALSE, value_ptr(model));
 
 }

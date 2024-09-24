@@ -1,26 +1,30 @@
 #include <SDL_opengles2.h>
 #include <string>
-#include "vertexbuffer.h"
 #include <glm/glm.hpp>
+
+#include "vertexbuffer.h"
+#include "renderable.h"
+#include "vertexbufferpool.h"
 
 class RenderPass
 {
 public:
-    RenderPass(VertexBuffer& vertexBuffer);
+    RenderPass();
     ~RenderPass();
 
     void init();
 
-    void render(double elapsed, float aspectRatio);
+    void render(float aspectRatio, const glm::mat4& view, const std::vector<const Renderable*>& renderables);
 
     GLuint getProgram();
     
 private:
     GLuint      compileShader (GLenum type, const GLchar* source);
     std::string readFile(const std::string& name) const;
-    void        setUniforms(double elapsed, float aspectRatio);
+    void        setUniforms(float aspectRatio, const Renderable& renderable);
 
-    VertexBuffer& vertexBuffer;
+    VertexBufferPool vertexBufferPool;
+
     GLuint vertexShader     = 0;
     GLuint fragmentShader   = 0;
 

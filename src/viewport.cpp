@@ -33,13 +33,6 @@ Viewport::Viewport(Scheduler& scheduler_)
 
     glViewport(0, 0, winWidth, winHeight);
 
-    //mesh.noisySphere(5.0f, 80, 80, 2.0f);
-    mesh.knot(3, 2, 140,140);
-    //mesh.sphere(5, 50, 50);
-    //mesh.cube(5);
-    vertexBuffer.init();
-    vertexBuffer.setMesh(&mesh);
-
     renderPass.init();
 }
 
@@ -49,18 +42,27 @@ Viewport::~Viewport()
     scheduler.viewports.erase(it);
 }
 
+void Viewport::attachCamera(Object &camera_)
+{
+    camera = &camera_;
+}
+
+void Viewport::attachRenderable(const Renderable& renderable)
+{
+    renderables.emplace_back(&renderable);
+}
+
 void Viewport::render()
 {
+    if (camera == nullptr) return; // Nothing to render without a camera
+
     int winWidth = 512, winHeight = 512;
     SDL_GL_GetDrawableSize(window, &winWidth, &winHeight);
     glViewport(0, 0, winWidth, winHeight);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    auto time   = std::chrono::steady_clock::now() - startTime;
-    auto milli  = std::chrono::duration_cast<std::chrono::milliseconds>(time).count();
-
-    renderPass.render(milli / 1000.0, (float)winWidth / (float)winHeight);
+    renderPass.render((float)winWidth / (float)winHeight, camera->getSpace().toRoot, renderables);
 
     SDL_GL_SwapWindow(window);
 }

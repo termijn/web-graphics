@@ -1,4 +1,7 @@
 #include "errors.h"
+#include <string>
+#include <iostream>
+#include <fstream>
 
 GLenum glCheckError_(const char *file, int line)
 {
