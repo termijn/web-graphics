@@ -3,7 +3,7 @@
 A web renderer aimed at displaying and interacting with 3d scenes. 
 
 ![A knot mesh](/images/screenshot.png)
-s
+
 ## Features: 
 - Scene graph
 - Shadow map
