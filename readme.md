@@ -1,14 +1,19 @@
 # Emscripten based webgl 2 renderer
 
-A web renderer aimed at displaying and interacting with 3d scenes.
+A web renderer aimed at displaying and interacting with 3d scenes. 
 
 ![A knot mesh](/images/screenshot.png)
+s
+## Features: 
+- Scene graph
+- Shadow map
+- Pbr lighting
 
 ## Getting started
 Before opening vs code, first call
 `PS C:\..\web\emsdk> .\emcmdprompt.bat`
 
-## tools
+## Tools
 See https://floooh.github.io/2023/11/11/emscripten-ide.html
 use Groove (windows) or Homebrew (mac OS) to install:
 - git
