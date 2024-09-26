@@ -5,6 +5,10 @@ precision mediump float;
 uniform vec3 lightDirection;
 uniform vec3 lightColor;
 
+uniform mat4 shadowVP;
+
+uniform sampler2D depthTexture;
+
 in vec3 Normal;             // Normal of the fragment
 in vec3 fragPositionWorld;  // Fragment position in world space
 in vec3 viewPositionWorld;  // Camera position
@@ -122,5 +126,22 @@ void main()
 
     // Final color
     vec3 finalColor = diffuseColor + directLighting;
-    FragColor = vec4(finalColor, 1.0);
+
+	vec4 shadowPos = shadowVP * vec4(fragPositionWorld, 1.0);
+
+	// Perform the perspective divide to get NDC and convert to texture coordinates
+	shadowPos /= shadowPos.w;  // Perspective divide (from homogeneous coordinates)
+
+	vec3 shadowCoord = shadowPos.xyz * 0.5 + 0.5;
+
+	float shadowDepth = texture(depthTexture, shadowCoord.xy).r;
+
+	float currentDepth = shadowCoord.z;
+
+	float shadow  = 1.0;
+	if (currentDepth > shadowDepth + 0.001) {
+		shadow = 0.5;
+	}
+
+    FragColor = vec4(finalColor * shadow, 1.0);
 }

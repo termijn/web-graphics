@@ -2,43 +2,37 @@
 #include <string>
 #include <glm/glm.hpp>
 
+#include "renderer.h"
 #include "vertexbuffer.h"
 #include "renderable.h"
 #include "vertexbufferpool.h"
 
-class RenderPass
+class RenderPass: public Renderer
 {
 public:
-    RenderPass();
+    RenderPass(VertexBufferPool& vertexBufferPool);
     ~RenderPass();
 
-    void init();
+    void init() override;
 
-    void render(float aspectRatio, const glm::mat4& view, const std::vector<const Renderable*>& renderables);
+    void render(float aspectRatio, const glm::mat4& view, const std::vector<const Renderable*>& renderables) const override;
 
-    GLuint getProgram();
-    
-private:
-    GLuint      compileShader (GLenum type, const GLchar* source);
-    std::string readFile(const std::string& name) const;
-    void        setUniforms(float aspectRatio, const Renderable& renderable);
+    void setShadow(const glm::mat4& svp, GLint depthTexture);
 
-    VertexBufferPool vertexBufferPool;
+protected:
+    void setUniforms(float aspectRatio, const Renderable& renderable) const override;
 
-    GLuint vertexShader     = 0;
-    GLuint fragmentShader   = 0;
+    GLint  locationViewUniform;
+    GLint  locationLightDirection;
+    GLint  locationLightColor;
+    GLint  locationRoughness;
+    GLint  locationMetallic;
+    GLint  locationProjection;
+    GLint  locationModel;
+    GLint  locationShadowVP;
+    GLint  locationDepthTexture;
 
-    GLint       locationViewUniform;
-    GLint       locationLightDirection;
-    GLint       locationLightColor;
-    GLint       locationRoughness;
-    GLint       locationMetallic;
-    GLint       locationProjection;
-    GLint       locationModel;
+    glm::mat4   shadowMapViewProjection;
+    GLint       depthTexture;
 
-    glm::mat4   view;
-    glm::mat4   projection;
-    glm::mat4   model;
-
-    GLuint program;
 };

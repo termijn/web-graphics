@@ -7,7 +7,10 @@ Object::Object()
 Object::Object(const Object &parent_)
     : parent(&parent_)
 {
-    parent_.children.emplace_back(&parent_);
+    assert(&parent_ != this);
+
+    parent_.children.emplace_back(this);
+    updateTransforms();
 }
 
 Object::~Object()
@@ -63,7 +66,7 @@ void Object::removeFromParent()
 {
     if (parent != nullptr)
     {
-        auto it = std::find(parent->children.begin(), parent->children.end(), parent);
+        auto it = std::find(parent->children.begin(), parent->children.end(), this);
         parent->children.erase(it);
     }
     parent = nullptr;

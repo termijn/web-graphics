@@ -6,9 +6,10 @@
 #include <chrono>
 
 #include "scheduler.h"
-#include "vertexbuffer.h"
+#include "vertexbufferpool.h"
 #include "renderpass.h"
 #include "objects/object.h"
+#include "shadowmap.h"
 
 class Renderable;
 
@@ -18,17 +19,21 @@ public:
     Viewport(Scheduler& scheduler);
     ~Viewport();
 
-    void attachCamera(Object& camera);
-    void attachRenderable(const Renderable& renderable);
+    void attachCamera       (Object& camera);
+    void attachRenderable   (const Renderable& renderable);
+    void attachLight        (const Object& light);
 
     void render();
 
 private:
     Scheduler&      scheduler;
-    SDL_Window*     window = nullptr;
-    Object*         camera = nullptr;
+    SDL_Window*     window  = nullptr;
+    Object*         camera  = nullptr;
+    const Object*   light   = nullptr;
 
-    RenderPass      renderPass;
+    VertexBufferPool    vertexBufferPool;
+    RenderPass          renderPass  = RenderPass(vertexBufferPool);
+    ShadowMap           shadowMap   = ShadowMap(vertexBufferPool);
 
     std::vector<const Renderable*> renderables;
 };
