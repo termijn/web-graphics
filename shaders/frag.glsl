@@ -25,6 +25,16 @@ const vec3 Fdielectric = vec3(0.04);
 const float M_PI = 3.1415926535897932384;
 const float Epsilon = 0.00001;
 
+const float texelSize = 1.0 / 512.0; // Texel size for 2048x2048 shadow map
+
+// Define the PCF offsets (adjust these if necessary)
+const vec2 pcfOffsets[4] = vec2[](
+    vec2(-texelSize * 0.5,  texelSize * 0.5),   // Top-left
+    vec2( texelSize * 0.5,  texelSize * 0.5),    // Top-right
+    vec2(-texelSize * 0.5, -texelSize * 0.5),    // Bottom-left
+    vec2( texelSize * 0.5, -texelSize * 0.5)     // Bottom-right
+);
+
 // GGX/Towbridge-Reitz normal distribution function.
 // Uses Disney's reparametrization of alpha = roughness^2.
 float ndfGGX(float cosLh, float roughness)
@@ -128,20 +138,26 @@ void main()
     vec3 finalColor = diffuseColor + directLighting;
 
 	vec4 shadowPos = shadowVP * vec4(fragPositionWorld, 1.0);
+    shadowPos /= shadowPos.w;  // Perspective divide
 
-	// Perform the perspective divide to get NDC and convert to texture coordinates
-	shadowPos /= shadowPos.w;  // Perspective divide (from homogeneous coordinates)
+    vec3 shadowCoord = shadowPos.xyz * 0.5 + 0.5; // Convert to [0, 1]
 
-	vec3 shadowCoord = shadowPos.xyz * 0.5 + 0.5;
+    float shadowDepth = 0.0;
+    float currentDepth = shadowCoord.z;
+    int samples = 0;
 
-	float shadowDepth = texture(depthTexture, shadowCoord.xy).r;
+    for (int i = 0; i < 4; ++i) {
+        vec2 offset = pcfOffsets[i];
+        float sampleDepth = texture(depthTexture, shadowCoord.xy + offset).r; // Sample depth
+        if (currentDepth > sampleDepth + 0.001) {
+            shadowDepth += 1.0;
+        }
+        samples++;
+    }
 
-	float currentDepth = shadowCoord.z;
+    // Average the shadow values
+    float shadow = (samples > 0) ? shadowDepth / float(samples) : 1.0;
 
-	float shadow  = 1.0;
-	if (currentDepth > shadowDepth + 0.001) {
-		shadow = 0.5;
-	}
-
-    FragColor = vec4(finalColor * shadow, 1.0);
+    // Final fragment color
+    FragColor = vec4(finalColor * (1.0 - (0.5 * shadow)), 1.0); // Adjust shadow to the final color
 }
