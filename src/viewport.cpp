@@ -68,7 +68,8 @@ void Viewport::render()
     SDL_GL_GetDrawableSize(window, &winWidth, &winHeight);
 
     mat4 worldToLight = light->getSpace().fromRoot;
-    shadowPass.render(worldToLight, shadowPass.getProjection(), renderables);
+    shadowPass.renderPre(worldToLight, shadowPass.getProjection());
+    shadowPass.render(renderables);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, winWidth, winHeight);
@@ -77,8 +78,11 @@ void Viewport::render()
     mat4 shadowProjection = shadowPass.getProjection();
     Space projectionSpace = camera->getProjectionSpace((float)winWidth / (float)winHeight);
     
-    screenPass.setShadow(shadowProjection * worldToLight, shadowPass.getDepthTexture());
-    screenPass.render   (camera->getSpace().fromRoot, camera->getSpace().to(projectionSpace), renderables);
+    vec3 lightPosWorld = vec3(light->getSpace().toRoot * vec4(0,0,0,1));
+    
+    screenPass.setShadow(shadowProjection * worldToLight, lightPosWorld, shadowPass.getDepthTexture());
+    screenPass.renderPre(camera->getSpace().fromRoot, camera->getSpace().to(projectionSpace));
+    screenPass.render   (renderables);
 
     SDL_GL_SwapWindow(window);
 }

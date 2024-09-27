@@ -12,8 +12,9 @@ public:
     ~ShadowPass();
 
     void init() override;
-
-    void render(const glm::mat4& view, const glm::mat4& projection, const std::vector<const Renderable*>& renderables) const override;
+    
+    void renderPre(const glm::mat4& view, const glm::mat4& projection) override;
+    void render(const std::vector<const Renderable*>& renderables) const override;
 
     glm::mat4 getView(const glm::mat4& worldToView) const;
     glm::mat4 getProjection() const;

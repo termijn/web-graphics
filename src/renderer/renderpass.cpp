@@ -6,6 +6,7 @@
 #include <fstream>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include "renderpass.h"
 
 using namespace glm;
 
@@ -32,7 +33,7 @@ void RenderPass::init()
     glLinkProgram   (program);
 }
 
-void RenderPass::render(const mat4& view_, const mat4& projection_, const std::vector<const Renderable *> &renderables) const
+void RenderPass::renderPre(const glm::mat4 &view_, const glm::mat4 &projection_)
 {
     view        = view_;
     projection  = projection_;
@@ -41,7 +42,10 @@ void RenderPass::render(const mat4& view_, const mat4& projection_, const std::v
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
+}
 
+void RenderPass::render(const std::vector<const Renderable *> &renderables) const
+{
     for (const Renderable* renderable : renderables)
     {
         VertexBuffer& vertexBuffer = vertexBufferPool.get(renderable);

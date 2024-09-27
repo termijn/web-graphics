@@ -19,7 +19,8 @@ public:
 
     virtual void init();
 
-    virtual void render(const glm::mat4& view, const glm::mat4& projection, const std::vector<const Renderable*>& renderables) const;
+    virtual void renderPre  (const glm::mat4& view, const glm::mat4& projection);
+    virtual void render     (const std::vector<const Renderable*>& renderables) const;
 
 protected:
     virtual void setUniforms(const Renderable& renderable) const = 0;

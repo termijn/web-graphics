@@ -1,3 +1,5 @@
+#pragma once
+
 #include <SDL_opengles2.h>
 #include <string>
 #include <glm/glm.hpp>
@@ -15,16 +17,17 @@ public:
 
     void init() override;
 
-    void render(const glm::mat4& view, const glm::mat4& projection, const std::vector<const Renderable*>& renderables) const override;
+    void renderPre(const glm::mat4& view, const glm::mat4& projection) override;
 
-    void setShadow(const glm::mat4& worldToLight, GLint depthTexture);
+    void setShadow(const glm::mat4& worldToLight, const glm::vec3& lightPosWorld, GLint depthTexture);
 
 protected:
     void setUniforms(const Renderable& renderable) const override;
 
     GLint  locationViewUniform;
-    GLint  locationLightDirection;
     GLint  locationLightColor;
+    GLint  locationLightPositionWorld;
+    GLint  locationBaseColor;
     GLint  locationRoughness;
     GLint  locationMetallic;
     GLint  locationProjection;
@@ -32,6 +35,7 @@ protected:
     GLint  locationShadowVP;
     GLint  locationDepthTexture;
 
+    glm::vec3   lightPosWorld;
     glm::mat4   shadowMapViewProjection;
     GLint       depthTexture;
 

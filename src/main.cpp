@@ -33,12 +33,14 @@ int main(int argc, char** argv)
     Renderable knotRenderable(knotObject);
     knotRenderable.mesh.knot(5, 2, 200, 100);
     knotRenderable.material.roughness   = 0.3;
-    knotRenderable.material.metallic    = 0.8;
+    knotRenderable.material.metallic    = 0.7;
 
     Renderable sphereRenderable(sphereObject);
     sphereRenderable.mesh.noisySphere(5, 100, 100, 2);
+    //sphereRenderable.mesh.sphere(5, 100, 100);
     sphereRenderable.material.roughness     = 0.8;
     sphereRenderable.material.metallic      = 0.3;
+    sphereRenderable.material.albedo  = vec3(0.7,0,0);
 
     Renderable cubeRenderable(cubeObject);
     cubeRenderable.mesh.cube(1);

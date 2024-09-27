@@ -4,6 +4,7 @@
 
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp> 
+#include "shadowpass.h"
 
 using namespace glm;
 
@@ -50,13 +51,30 @@ void ShadowPass::init()
     locationModel           = glGetUniformLocation(program, "model");
 }
 
-void ShadowPass::render(const mat4& view_, const mat4& projection_, const std::vector<const Renderable*>& renderables) const
+void ShadowPass::renderPre(const glm::mat4 &view_, const glm::mat4 &projection_)
 {
+    RenderPass::renderPre(view_, projection_);
+
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
     glViewport(0, 0, width, height);
     glClear(GL_DEPTH_BUFFER_BIT);
+}
 
-    RenderPass::render(view_, projection_, renderables);
+void ShadowPass::render(const std::vector<const Renderable*>& renderables) const
+{
+    for (const Renderable* renderable : renderables)
+    {
+        if (!renderable->material.castsShadow) continue;
+        
+        VertexBuffer& vertexBuffer = vertexBufferPool.get(renderable);
+        vertexBuffer.setMesh(&renderable->mesh);
+        vertexBuffer.bind(program);
+
+        setUniforms(*renderable);
+    
+        glDrawElements(GL_TRIANGLES, vertexBuffer.getMesh().indices.size() * 3, GL_UNSIGNED_SHORT, 0);
+        glCheckError();
+    }
 }
 
 mat4 ShadowPass::getProjection() const
