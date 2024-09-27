@@ -9,40 +9,40 @@ void Mesh::cube(float size)
     // Define the vertices of the cube, each with the appropriate normal for each face
     vertices = {
         // Back face (-Z)
-        { glm::vec4(-halfSize, -halfSize, -halfSize, 1.0f), glm::vec4(0, 0, -1, 0) },
-        { glm::vec4( halfSize, -halfSize, -halfSize, 1.0f), glm::vec4(0, 0, -1, 0) },
-        { glm::vec4( halfSize,  halfSize, -halfSize, 1.0f), glm::vec4(0, 0, -1, 0) },
-        { glm::vec4(-halfSize,  halfSize, -halfSize, 1.0f), glm::vec4(0, 0, -1, 0) },
+        { vec4(-halfSize, -halfSize, -halfSize, 1.0f), vec4(0, 0, -1, 0) },
+        { vec4( halfSize, -halfSize, -halfSize, 1.0f), vec4(0, 0, -1, 0) },
+        { vec4( halfSize,  halfSize, -halfSize, 1.0f), vec4(0, 0, -1, 0) },
+        { vec4(-halfSize,  halfSize, -halfSize, 1.0f), vec4(0, 0, -1, 0) },
 
         // Front face (+Z)
-        { glm::vec4(-halfSize, -halfSize,  halfSize, 1.0f), glm::vec4(0, 0, 1, 0) },
-        { glm::vec4( halfSize, -halfSize,  halfSize, 1.0f), glm::vec4(0, 0, 1, 0) },
-        { glm::vec4( halfSize,  halfSize,  halfSize, 1.0f), glm::vec4(0, 0, 1, 0) },
-        { glm::vec4(-halfSize,  halfSize,  halfSize, 1.0f), glm::vec4(0, 0, 1, 0) },
+        { vec4(-halfSize, -halfSize,  halfSize, 1.0f), vec4(0, 0, 1, 0) },
+        { vec4( halfSize, -halfSize,  halfSize, 1.0f), vec4(0, 0, 1, 0) },
+        { vec4( halfSize,  halfSize,  halfSize, 1.0f), vec4(0, 0, 1, 0) },
+        { vec4(-halfSize,  halfSize,  halfSize, 1.0f), vec4(0, 0, 1, 0) },
 
         // Left face (-X)
-        { glm::vec4(-halfSize, -halfSize, -halfSize, 1.0f), glm::vec4(-1, 0, 0, 0) },
-        { glm::vec4(-halfSize,  halfSize, -halfSize, 1.0f), glm::vec4(-1, 0, 0, 0) },
-        { glm::vec4(-halfSize,  halfSize,  halfSize, 1.0f), glm::vec4(-1, 0, 0, 0) },
-        { glm::vec4(-halfSize, -halfSize,  halfSize, 1.0f), glm::vec4(-1, 0, 0, 0) },
+        { vec4(-halfSize, -halfSize, -halfSize, 1.0f), vec4(-1, 0, 0, 0) },
+        { vec4(-halfSize,  halfSize, -halfSize, 1.0f), vec4(-1, 0, 0, 0) },
+        { vec4(-halfSize,  halfSize,  halfSize, 1.0f), vec4(-1, 0, 0, 0) },
+        { vec4(-halfSize, -halfSize,  halfSize, 1.0f), vec4(-1, 0, 0, 0) },
 
         // Right face (+X)
-        { glm::vec4(halfSize, -halfSize, -halfSize, 1.0f), glm::vec4(1, 0, 0, 0) },
-        { glm::vec4(halfSize,  halfSize, -halfSize, 1.0f), glm::vec4(1, 0, 0, 0) },
-        { glm::vec4(halfSize,  halfSize,  halfSize, 1.0f), glm::vec4(1, 0, 0, 0) },
-        { glm::vec4(halfSize, -halfSize,  halfSize, 1.0f), glm::vec4(1, 0, 0, 0) },
+        { vec4(halfSize, -halfSize, -halfSize, 1.0f), vec4(1, 0, 0, 0) },
+        { vec4(halfSize,  halfSize, -halfSize, 1.0f), vec4(1, 0, 0, 0) },
+        { vec4(halfSize,  halfSize,  halfSize, 1.0f), vec4(1, 0, 0, 0) },
+        { vec4(halfSize, -halfSize,  halfSize, 1.0f), vec4(1, 0, 0, 0) },
 
         // Bottom face (-Y)
-        { glm::vec4(-halfSize, -halfSize, -halfSize, 1.0f), glm::vec4(0, -1, 0, 0) },
-        { glm::vec4( halfSize, -halfSize, -halfSize, 1.0f), glm::vec4(0, -1, 0, 0) },
-        { glm::vec4( halfSize, -halfSize,  halfSize, 1.0f), glm::vec4(0, -1, 0, 0) },
-        { glm::vec4(-halfSize, -halfSize,  halfSize, 1.0f), glm::vec4(0, -1, 0, 0) },
+        { vec4(-halfSize, -halfSize, -halfSize, 1.0f), vec4(0, -1, 0, 0) },
+        { vec4( halfSize, -halfSize, -halfSize, 1.0f), vec4(0, -1, 0, 0) },
+        { vec4( halfSize, -halfSize,  halfSize, 1.0f), vec4(0, -1, 0, 0) },
+        { vec4(-halfSize, -halfSize,  halfSize, 1.0f), vec4(0, -1, 0, 0) },
 
         // Top face (+Y)
-        { glm::vec4(-halfSize, halfSize, -halfSize, 1.0f), glm::vec4(0, 1, 0, 0) },
-        { glm::vec4( halfSize, halfSize, -halfSize, 1.0f), glm::vec4(0, 1, 0, 0) },
-        { glm::vec4( halfSize, halfSize,  halfSize, 1.0f), glm::vec4(0, 1, 0, 0) },
-        { glm::vec4(-halfSize, halfSize,  halfSize, 1.0f), glm::vec4(0, 1, 0, 0) },
+        { vec4(-halfSize, halfSize, -halfSize, 1.0f), vec4(0, 1, 0, 0) },
+        { vec4( halfSize, halfSize, -halfSize, 1.0f), vec4(0, 1, 0, 0) },
+        { vec4( halfSize, halfSize,  halfSize, 1.0f), vec4(0, 1, 0, 0) },
+        { vec4(-halfSize, halfSize,  halfSize, 1.0f), vec4(0, 1, 0, 0) },
     };
 
     // Define the 12 triangles (6 faces) of the cube using indices
@@ -78,8 +78,8 @@ void Mesh::noisySphere(float radius, int rings, int sectors, float noiseAmplitud
             y += noise * (rand() % 2 == 0 ? 1 : -1);
             z += noise * (rand() % 2 == 0 ? 1 : -1);
 
-            glm::vec4 position(x, y, z, 1.0f);
-            glm::vec4 normal = glm::normalize(position); // Normal is the normalized position vector
+            vec4 position(x, y, z, 1.0f);
+            vec4 normal = normalize(position); // Normal is the normalized position vector
 
             vertices.push_back({ position, normal });
         }
@@ -91,8 +91,8 @@ void Mesh::noisySphere(float radius, int rings, int sectors, float noiseAmplitud
             int first = (r * (sectors + 1)) + s;
             int second = first + sectors + 1;
 
-            indices.push_back({ static_cast<glm::u16>(first), static_cast<glm::u16>(second), static_cast<glm::u16>(first + 1) });
-            indices.push_back({ static_cast<glm::u16>(second), static_cast<glm::u16>(second + 1), static_cast<glm::u16>(first + 1) });
+            indices.push_back({ static_cast<u16>(first), static_cast<u16>(second), static_cast<u16>(first + 1) });
+            indices.push_back({ static_cast<u16>(second), static_cast<u16>(second + 1), static_cast<u16>(first + 1) });
         }
     }
 }
@@ -107,32 +107,32 @@ void Mesh::knot(float radius, float tubeRadius, int segments, int sides)
         float t = i * 2.0f * M_PI / segments;
 
         // Parametric equations for the knot centerline
-        glm::vec3 center = glm::vec3(
+        vec3 center = vec3(
             (2.0f + cos(3.0f * t)) * cos(2.0f * t),
             (2.0f + cos(3.0f * t)) * sin(2.0f * t),
             sin(3.0f * t)
         ) * radius;
 
         // Calculate the derivative (tangent) of the knot for Frenet frame
-        glm::vec3 tangent = glm::normalize(glm::vec3(
+        vec3 tangent = normalize(vec3(
             -2.0f * sin(2.0f * t) * (2.0f + cos(3.0f * t)) - 6.0f * sin(3.0f * t) * cos(2.0f * t),
             2.0f * cos(2.0f * t) * (2.0f + cos(3.0f * t)) - 6.0f * sin(3.0f * t) * sin(2.0f * t),
             3.0f * cos(3.0f * t)
         ));
 
         // Find two perpendicular vectors to the tangent to create the Frenet frame
-        glm::vec3 bitangent = glm::normalize(glm::cross(tangent, glm::vec3(0.0f, 0.0f, 1.0f)));
-        glm::vec3 normal = glm::normalize(glm::cross(tangent, bitangent));
+        vec3 bitangent = normalize(cross(tangent, vec3(0.0f, 0.0f, 1.0f)));
+        vec3 normal = normalize(cross(tangent, bitangent));
 
         for (int j = 0; j <= sides; ++j)
         {
             float s = j * 2.0f * M_PI / sides;
 
             // Compute the position of each vertex around the centerline
-            glm::vec3 circlePos = cos(s) * normal + sin(s) * bitangent;
+            vec3 circlePos = cos(s) * normal + sin(s) * bitangent;
 
-            glm::vec4 position = glm::vec4(center + circlePos * tubeRadius, 1.0f); // thickness of the knot
-            glm::vec4 vertexNormal = glm::vec4(glm::normalize(circlePos), 0.0f);
+            vec4 position = vec4(center + circlePos * tubeRadius, 1.0f); // thickness of the knot
+            vec4 vertexNormal = vec4(normalize(circlePos), 0.0f);
 
             vertices.push_back({position, vertexNormal});
         }
@@ -147,8 +147,8 @@ void Mesh::knot(float radius, float tubeRadius, int segments, int sides)
             int nextJ = (j + 1) % sides;
 
             // Define triangles or quads (two triangles per quad)
-            indices.push_back(glm::u16vec3(i * (sides + 1) + j, nextI * (sides + 1) + j, i * (sides + 1) + nextJ));
-            indices.push_back(glm::u16vec3(nextI * (sides + 1) + j, nextI * (sides + 1) + nextJ, i * (sides + 1) + nextJ));
+            indices.push_back(u16vec3(i * (sides + 1) + j, nextI * (sides + 1) + j, i * (sides + 1) + nextJ));
+            indices.push_back(u16vec3(nextI * (sides + 1) + j, nextI * (sides + 1) + nextJ, i * (sides + 1) + nextJ));
         }
     }
 }
@@ -176,8 +176,8 @@ void Mesh::sphere(float radius, int rings, int sectors)
             float z = sin(phi) * sin(theta);
 
             Vertex vertex;
-            vertex.position = glm::vec4(x * radius, y * radius, z * radius, 1.0f);
-            vertex.normal = glm::vec4(x, y, z, 0.0f); // Normal is the same as the position for a sphere
+            vertex.position = vec4(x * radius, y * radius, z * radius, 1.0f);
+            vertex.normal = vec4(x, y, z, 0.0f); // Normal is the same as the position for a sphere
             vertices.push_back(vertex);
         }
     }
@@ -188,8 +188,8 @@ void Mesh::sphere(float radius, int rings, int sectors)
             unsigned int curRow = r * sectors;
             unsigned int nextRow = (r + 1) * sectors;
 
-            indices.push_back(glm::u16vec3(curRow + s, nextRow + s, nextRow + (s + 1)));
-            indices.push_back(glm::u16vec3(curRow + s, nextRow + (s + 1), curRow + (s + 1)));
+            indices.push_back(u16vec3(curRow + s, nextRow + s, nextRow + (s + 1)));
+            indices.push_back(u16vec3(curRow + s, nextRow + (s + 1), curRow + (s + 1)));
         }
     }
 }

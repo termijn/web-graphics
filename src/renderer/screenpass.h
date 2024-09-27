@@ -2,16 +2,16 @@
 #include <string>
 #include <glm/glm.hpp>
 
-#include "renderer.h"
-#include "vertexbuffer.h"
+#include "renderer/renderpass.h"
+#include "renderer/vertexbuffer.h"
+#include "renderer/vertexbufferpool.h"
 #include "renderable.h"
-#include "vertexbufferpool.h"
 
-class RenderPass: public Renderer
+class ScreenPass: public RenderPass
 {
 public:
-    RenderPass(VertexBufferPool& vertexBufferPool);
-    ~RenderPass();
+    ScreenPass(VertexBufferPool& vertexBufferPool);
+    ~ScreenPass();
 
     void init() override;
 
@@ -35,7 +35,7 @@ protected:
     glm::mat4   shadowMapViewProjection;
     GLint       depthTexture;
 
-    RenderPass (const RenderPass&)              = delete;
-    RenderPass& operator= (const RenderPass&)   = delete;
+    ScreenPass (const ScreenPass&)              = delete;
+    ScreenPass& operator= (const ScreenPass&)   = delete;
 
 };

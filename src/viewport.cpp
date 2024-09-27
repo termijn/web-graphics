@@ -1,6 +1,8 @@
 #include "viewport.h"
 #include <iostream>
 
+using namespace glm;
+
 Viewport::Viewport(Scheduler& scheduler_)
     : scheduler(scheduler_)
 {
@@ -33,8 +35,8 @@ Viewport::Viewport(Scheduler& scheduler_)
 
     glViewport(0, 0, winWidth, winHeight);
 
-    renderPass.init();
-    shadowMap.init();
+    screenPass.init();
+    shadowPass.init();
 }
 
 Viewport::~Viewport()
@@ -65,18 +67,18 @@ void Viewport::render()
     int winWidth = 512, winHeight = 512;
     SDL_GL_GetDrawableSize(window, &winWidth, &winHeight);
 
-    glm::mat4 worldToShadowView = light->getSpace().fromRoot;
-    shadowMap.render(worldToShadowView, shadowMap.getProjection(), renderables);
+    mat4 worldToLight = light->getSpace().fromRoot;
+    shadowPass.render(worldToLight, shadowPass.getProjection(), renderables);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, winWidth, winHeight);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glm::mat4 shadowProjection = shadowMap.getProjection();
-
+    mat4 shadowProjection = shadowPass.getProjection();
     Space projectionSpace = camera->getProjectionSpace((float)winWidth / (float)winHeight);
-    renderPass.setShadow(shadowProjection * worldToShadowView, shadowMap.getDepthTexture());
-    renderPass.render   (camera->getSpace().fromRoot, camera->getSpace().to(projectionSpace), renderables);
+    
+    screenPass.setShadow(shadowProjection * worldToLight, shadowPass.getDepthTexture());
+    screenPass.render   (camera->getSpace().fromRoot, camera->getSpace().to(projectionSpace), renderables);
 
     SDL_GL_SwapWindow(window);
 }

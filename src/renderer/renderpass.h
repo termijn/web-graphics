@@ -4,18 +4,18 @@
 #include <string>
 #include <glm/glm.hpp>
 
-#include "vertexbuffer.h"
+#include "renderer/vertexbuffer.h"
+#include "renderer/vertexbufferpool.h"
 #include "renderable.h"
-#include "vertexbufferpool.h"
 
-class Renderer
+class RenderPass
 {
 public:
-    Renderer(
+    RenderPass(
         const std::string& vertexShaderFileName,
         const std::string& fragmentShaderFileName,
         VertexBufferPool&  vertexBufferPool);
-    virtual ~Renderer();
+    virtual ~RenderPass();
 
     virtual void init();
 
@@ -40,6 +40,6 @@ protected:
 
     GLuint program;
 
-    Renderer (const Renderer&)              = delete;
-    Renderer& operator= (const Renderer&)   = delete;
+    RenderPass (const RenderPass&)              = delete;
+    RenderPass& operator= (const RenderPass&)   = delete;
 };

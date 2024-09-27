@@ -3,13 +3,13 @@
 #include <SDL_opengles2.h>
 
 #include "renderable.h"
-#include "renderer.h"
+#include "renderer/renderpass.h"
 
-class ShadowMap: public Renderer
+class ShadowPass: public RenderPass
 {
 public:
-    ShadowMap(VertexBufferPool& vertexBufferPool);
-    ~ShadowMap();
+    ShadowPass(VertexBufferPool& vertexBufferPool);
+    ~ShadowPass();
 
     void init() override;
 
@@ -35,7 +35,7 @@ private:
     GLint  locationProjection;
     GLint  locationModel;
 
-    ShadowMap (const ShadowMap&)              = delete;
-    ShadowMap& operator= (const ShadowMap&)   = delete;
+    ShadowPass (const ShadowPass&)              = delete;
+    ShadowPass& operator= (const ShadowPass&)   = delete;
 
 };

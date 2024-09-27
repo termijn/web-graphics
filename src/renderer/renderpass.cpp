@@ -1,22 +1,24 @@
-#include "renderer.h"
+#include "renderer/renderpass.h"
 #include "errors.h"
 
 #include <string>
 #include <iostream>
 #include <fstream>
 #include <glm/gtc/type_ptr.hpp>
-#include <glm/gtc/matrix_transform.hpp> 
+#include <glm/gtc/matrix_transform.hpp>
 
-Renderer::Renderer(const std::string &vertexShaderFileName_, const std::string &fragmentShaderFileName_, VertexBufferPool&  vertexBufferPool_)
+using namespace glm;
+
+RenderPass::RenderPass(const std::string &vertexShaderFileName_, const std::string &fragmentShaderFileName_, VertexBufferPool&  vertexBufferPool_)
     : vertexBufferPool      (vertexBufferPool_)
     , vertexShaderFileName  (vertexShaderFileName_)
     , fragmentShaderFileName(fragmentShaderFileName_)
 {
 }
 
-Renderer::~Renderer() = default;
+RenderPass::~RenderPass() = default;
 
-void Renderer::init()
+void RenderPass::init()
 {
     std::string vertexSource    = readFile(vertexShaderFileName);
     std::string fragmentSource  = readFile(fragmentShaderFileName);
@@ -30,7 +32,7 @@ void Renderer::init()
     glLinkProgram   (program);
 }
 
-void Renderer::render(const glm::mat4& view_, const glm::mat4& projection_, const std::vector<const Renderable *> &renderables) const
+void RenderPass::render(const mat4& view_, const mat4& projection_, const std::vector<const Renderable *> &renderables) const
 {
     view        = view_;
     projection  = projection_;
@@ -53,7 +55,7 @@ void Renderer::render(const glm::mat4& view_, const glm::mat4& projection_, cons
     }
 }
 
-GLuint Renderer::compileShader(GLenum type, const GLchar *source)
+GLuint RenderPass::compileShader(GLenum type, const GLchar *source)
 {
     GLuint shader = glCreateShader(type);
     glShaderSource(shader, 1, &source, NULL);
@@ -78,7 +80,7 @@ GLuint Renderer::compileShader(GLenum type, const GLchar *source)
     return shader;
 }
 
-std::string Renderer::readFile(const std::string &name) const
+std::string RenderPass::readFile(const std::string &name) const
 {
     std::string result;
     std::ifstream stream(name);

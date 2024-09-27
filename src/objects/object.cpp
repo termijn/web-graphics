@@ -37,16 +37,16 @@ void Object::orphan()
    updateTransforms();
 }
 
-void Object::setTransform(const glm::mat4 &toParent_)
+void Object::setTransform(const mat4 &toParent_)
 {
     toParent = toParent_;
     updateTransforms();
 }
 
-void Object::lookAt(const glm::vec3 &from, const glm::vec3 &to, const glm::vec3 &up)
+void Object::lookAt(const vec3 &from, const vec3 &to, const vec3 &up)
 {
-    glm::mat4 fromParent = glm::lookAt(from, to, up);
-    setTransform(glm::inverse(fromParent));
+    mat4 fromParent = glm::lookAt(from, to, up);
+    setTransform(inverse(fromParent));
 }
 
 Space Object::getSpace() const
@@ -59,12 +59,12 @@ void Object::updateTransforms() const
     if (parent == nullptr)
     {
         space.toRoot      = toParent;
-        space.fromRoot    = glm::inverse(toParent);
+        space.fromRoot    = inverse(toParent);
     }
     else
     {
         space.toRoot      = parent->space.toRoot * toParent;
-        space.fromRoot    = glm::inverse(space.toRoot);
+        space.fromRoot    = inverse(space.toRoot);
     }
 
     for(auto child : children)
@@ -81,21 +81,21 @@ void Object::removeFromParent()
     parent = nullptr;
 }
 
-glm::mat4 Space::to(const Space &target) const
+mat4 Space::to(const Space &target) const
 {
     return target.fromRoot * toRoot;
 }
 
-glm::vec3 Space::transformPos(const glm::vec3 &position, const Space &targetSpace) const
+vec3 Space::transformPos(const vec3 &position, const Space &targetSpace) const
 {
-    glm::vec4 result = to(targetSpace) * glm::vec4(position, 1.0);
+    vec4 result = to(targetSpace) * vec4(position, 1.0);
     result /= result.w;
     return result;
 }
 
-glm::vec3 Space::transformDir(const glm::vec3 &direction, const Space &targetSpace) const
+vec3 Space::transformDir(const vec3 &direction, const Space &targetSpace) const
 {
-    return to(targetSpace) * glm::vec4(direction, 0.0);
+    return to(targetSpace) * vec4(direction, 0.0);
 }
 
 CameraObject::CameraObject(const Object &parent)

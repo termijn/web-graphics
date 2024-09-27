@@ -1,21 +1,23 @@
-#include "shadowmap.h"
+#include "renderer/shadowpass.h"
 #include "iostream"
 #include "errors.h"
 
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp> 
 
-ShadowMap::ShadowMap(VertexBufferPool& vertexBufferPool_)
-    : Renderer("/shaders/shadowmap-vertex.glsl", "/shaders/shadowmap-frag.glsl", vertexBufferPool_)
+using namespace glm;
+
+ShadowPass::ShadowPass(VertexBufferPool& vertexBufferPool_)
+    : RenderPass("/shaders/shadowmap-vertex.glsl", "/shaders/shadowmap-frag.glsl", vertexBufferPool_)
 {
 
 }
 
-ShadowMap::~ShadowMap() = default;
+ShadowPass::~ShadowPass() = default;
 
-void ShadowMap::init()
+void ShadowPass::init()
 {
-    Renderer::init();
+    RenderPass::init();
 
     glGenTextures(1, &depthTexture);
     glBindTexture(GL_TEXTURE_2D, depthTexture);
@@ -48,30 +50,30 @@ void ShadowMap::init()
     locationModel           = glGetUniformLocation(program, "model");
 }
 
-void ShadowMap::render(const glm::mat4& view_, const glm::mat4& projection_, const std::vector<const Renderable*>& renderables) const
+void ShadowPass::render(const mat4& view_, const mat4& projection_, const std::vector<const Renderable*>& renderables) const
 {
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
     glViewport(0, 0, width, height);
     glClear(GL_DEPTH_BUFFER_BIT);
 
-    Renderer::render(view_, projection_, renderables);
+    RenderPass::render(view_, projection_, renderables);
 }
 
-glm::mat4 ShadowMap::getProjection() const
+mat4 ShadowPass::getProjection() const
 {
-    return glm::perspective<float>(glm::radians(90.0f),1.0f, 1.0f, 200.0f);
+    return perspective<float>(radians(90.0f),1.0f, 1.0f, 200.0f);
 }
 
-GLint ShadowMap::getDepthTexture()
+GLint ShadowPass::getDepthTexture()
 {
     return depthTexture;
 }
 
-void ShadowMap::setUniforms(const Renderable &renderable) const
+void ShadowPass::setUniforms(const Renderable &renderable) const
 {
     glUniformMatrix4fv(locationViewUniform, 1, GL_FALSE, value_ptr(view));
     glUniformMatrix4fv(locationProjection, 1, GL_FALSE, value_ptr(getProjection()));
 
-    glm::mat4 model = renderable.object.getSpace().toRoot;
+    mat4 model = renderable.object.getSpace().toRoot;
     glUniformMatrix4fv(locationModel, 1, GL_FALSE, value_ptr(model));
 }

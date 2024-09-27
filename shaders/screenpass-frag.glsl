@@ -25,9 +25,8 @@ const vec3 Fdielectric = vec3(0.04);
 const float M_PI = 3.1415926535897932384;
 const float Epsilon = 0.00001;
 
-const float texelSize = 1.0 / 512.0; // Texel size for 2048x2048 shadow map
+const float texelSize = 1.0 / 2048.0; // Texel size for 2048x2048 shadow map
 
-// Define the PCF offsets (adjust these if necessary)
 const vec2 pcfOffsets[4] = vec2[](
     vec2(-texelSize * 0.5,  texelSize * 0.5),   // Top-left
     vec2( texelSize * 0.5,  texelSize * 0.5),    // Top-right
@@ -64,6 +63,11 @@ float gaSchlickGGX(float cosLi, float cosLo, float roughness)
 vec3 fresnelSchlick(vec3 F0, float cosTheta)
 {
 	return F0 + (vec3(1.0) - F0) * pow(1.0 - cosTheta, 5.0);
+}
+
+float random(vec2 st) 
+{
+    return fract(sin(dot(st.xy, vec2(12.9898, 78.233))) * 43758.5453123);
 }
 
 void main()
@@ -134,7 +138,6 @@ void main()
 
     vec3 diffuseColor = color * lightColor * diffuse;
 
-    // Final color
     vec3 finalColor = diffuseColor + directLighting;
 
 	vec4 shadowPos = shadowVP * vec4(fragPositionWorld, 1.0);
@@ -146,18 +149,20 @@ void main()
     float currentDepth = shadowCoord.z;
     int samples = 0;
 
-    for (int i = 0; i < 4; ++i) {
-        vec2 offset = pcfOffsets[i];
-        float sampleDepth = texture(depthTexture, shadowCoord.xy + offset).r; // Sample depth
+	float h = random(shadowCoord.xy);
+
+    for (int i = 0; i < 4; ++i) 
+	{
+        vec2 offset = pcfOffsets[i] + (h - 0.5) * texelSize * 2.0;
+        float sampleDepth = texture(depthTexture, shadowCoord.xy + offset).r;
         if (currentDepth > sampleDepth + 0.001) {
             shadowDepth += 1.0;
         }
         samples++;
     }
-
     // Average the shadow values
     float shadow = (samples > 0) ? shadowDepth / float(samples) : 1.0;
 
-    // Final fragment color
-    FragColor = vec4(finalColor * (1.0 - (0.5 * shadow)), 1.0); // Adjust shadow to the final color
+	float shadowFactor = 0.5;
+    FragColor = vec4(finalColor * (1.0 - (shadowFactor * shadow)), 1.0);
 }

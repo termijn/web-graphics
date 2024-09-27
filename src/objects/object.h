@@ -47,7 +47,6 @@ private:
 
     mutable std::vector<const Object*> children;
 
-    
     void removeFromParent();
 
     Object& operator= (const Object&)   = delete;

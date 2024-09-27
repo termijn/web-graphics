@@ -6,10 +6,12 @@
 #include <chrono>
 
 #include "scheduler.h"
-#include "vertexbufferpool.h"
-#include "renderpass.h"
+
 #include "objects/object.h"
-#include "shadowmap.h"
+
+#include "renderer/vertexbufferpool.h"
+#include "renderer/screenpass.h"
+#include "renderer/shadowpass.h"
 
 class Renderable;
 
@@ -32,8 +34,8 @@ private:
     const Object*           light   = nullptr;
 
     VertexBufferPool    vertexBufferPool;
-    RenderPass          renderPass  = RenderPass(vertexBufferPool);
-    ShadowMap           shadowMap   = ShadowMap(vertexBufferPool);
+    ScreenPass          screenPass  = ScreenPass(vertexBufferPool);
+    ShadowPass          shadowPass  = ShadowPass(vertexBufferPool);
 
     std::vector<const Renderable*> renderables;
 
