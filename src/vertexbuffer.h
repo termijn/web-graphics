@@ -19,4 +19,5 @@ private:
     GLuint elementBufferObject;
 
     const Mesh* mesh;
+
 };

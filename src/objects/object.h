@@ -42,4 +42,6 @@ private:
     void updateTransforms() const;
     void removeFromParent();
 
+    Object& operator= (const Object&)   = delete;
+
 };

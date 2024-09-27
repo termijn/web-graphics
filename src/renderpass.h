@@ -35,4 +35,7 @@ protected:
     glm::mat4   shadowMapViewProjection;
     GLint       depthTexture;
 
+    RenderPass (const RenderPass&)              = delete;
+    RenderPass& operator= (const RenderPass&)   = delete;
+
 };

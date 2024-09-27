@@ -36,4 +36,8 @@ private:
     ShadowMap           shadowMap   = ShadowMap(vertexBufferPool);
 
     std::vector<const Renderable*> renderables;
+
+    Viewport (const Viewport&)              = delete;
+    Viewport& operator= (const Viewport&)   = delete;
+
 };

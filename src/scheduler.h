@@ -21,4 +21,7 @@ public:
 private:
     std::vector<Viewport*> viewports;
     std::vector<Animator*> animators;
+
+    Scheduler (const Scheduler&)              = delete;
+    Scheduler& operator= (const Scheduler&)   = delete;
 };

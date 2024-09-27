@@ -24,4 +24,7 @@ private:
 
     std::chrono::time_point<std::chrono::steady_clock> startTime;
 
+    Animator (const Animator&)              = delete;
+    Animator& operator= (const Animator&)   = delete;
+
 };

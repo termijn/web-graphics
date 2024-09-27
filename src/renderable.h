@@ -24,4 +24,8 @@ public:
     Object&     object;
     Material    material;
     Mesh        mesh;
+
+    Renderable (const Renderable&)              = delete;
+    Renderable& operator= (const Renderable&)   = delete;
+
 };

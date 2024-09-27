@@ -35,4 +35,7 @@ private:
     GLint  locationProjection;
     GLint  locationModel;
 
+    ShadowMap (const ShadowMap&)              = delete;
+    ShadowMap& operator= (const ShadowMap&)   = delete;
+
 };
