@@ -3,7 +3,7 @@
 A web renderer displaying and interacting with 3d scenes. Built to experiment and learn webassembly and webgl 2. 
 
 ![A knot mesh](/images/screenshot.png)
-s
+
 ## Features: 
 - Scene graph
 - Softened shadow map
