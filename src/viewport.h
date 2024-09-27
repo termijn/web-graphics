@@ -19,17 +19,17 @@ public:
     Viewport(Scheduler& scheduler);
     ~Viewport();
 
-    void attachCamera       (Object& camera);
-    void attachRenderable   (const Renderable& renderable);
-    void attachLight        (const Object& light);
+    void attachCamera       (const CameraObject& camera);
+    void attachRenderable   (const Renderable&   renderable);
+    void attachLight        (const Object&       light);
 
     void render();
 
 private:
-    Scheduler&      scheduler;
-    SDL_Window*     window  = nullptr;
-    Object*         camera  = nullptr;
-    const Object*   light   = nullptr;
+    Scheduler&              scheduler;
+    SDL_Window*             window  = nullptr;
+    const CameraObject*     camera  = nullptr;
+    const Object*           light   = nullptr;
 
     VertexBufferPool    vertexBufferPool;
     RenderPass          renderPass  = RenderPass(vertexBufferPool);

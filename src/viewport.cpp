@@ -43,7 +43,7 @@ Viewport::~Viewport()
     scheduler.viewports.erase(it);
 }
 
-void Viewport::attachCamera(Object &camera_)
+void Viewport::attachCamera(const CameraObject& camera_)
 {
     camera = &camera_;
 }
@@ -65,17 +65,18 @@ void Viewport::render()
     int winWidth = 512, winHeight = 512;
     SDL_GL_GetDrawableSize(window, &winWidth, &winHeight);
 
-    glm::mat4 worldToShadowView = shadowMap.getView(light->getSpace().fromRoot);
-    
-    shadowMap.render(1.0, worldToShadowView, renderables);
+    glm::mat4 worldToShadowView = light->getSpace().fromRoot;
+    shadowMap.render(worldToShadowView, shadowMap.getProjection(), renderables);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, winWidth, winHeight);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glm::mat4 shadowProjection = shadowMap.getProjection();
+
+    Space projectionSpace = camera->getProjectionSpace((float)winWidth / (float)winHeight);
     renderPass.setShadow(shadowProjection * worldToShadowView, shadowMap.getDepthTexture());
-    renderPass.render((float)winWidth / (float)winHeight, camera->getSpace().fromRoot, renderables);
+    renderPass.render   (camera->getSpace().fromRoot, camera->getSpace().to(projectionSpace), renderables);
 
     SDL_GL_SwapWindow(window);
 }

@@ -16,6 +16,7 @@
                 overflow: hidden;
                 display: block;
                 background-color: transparent;
+                image-rendering: optimizeQuality;
             }
         </style>
     </head>
@@ -23,8 +24,17 @@
         <canvas class = "fullwindow" id="canvas" oncontextmenu="event.preventDefault()"/>
         <script type="text/javascript">
             var Module = {};
-            Module.canvas = document.getElementById('canvas');
+            var canvas = document.getElementById('canvas');
+            Module.canvas = canvas;
 
+            // Enable anti-aliasing
+            const gl = canvas.getContext('webgl2', { antialias: true });
+
+            if (!gl) {
+                console.log("WebGL not supported");
+            } else {
+                console.log("WebGL context created with antialiasing");
+            }
         </script>
         {{{ SCRIPT }}}
     </body>

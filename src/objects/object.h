@@ -27,9 +27,17 @@ public:
     void adopt  (const Object& parent);
     void orphan ();
 
+    // Sets a new transformation to parent
     void setTransform(const glm::mat4& toParent);
 
+    // Sets the origin at from, aligns the negative z-axis with to-from, respecting the up vector for the y-axis.
+    // Positions and directions are defined with respect to the parent Object
+    void lookAt(const glm::vec3& from, const glm::vec3& to, const glm::vec3& up);
+
     Space getSpace() const;
+
+protected:
+    virtual void updateTransforms() const;
 
 private:
     const Object*   parent      = nullptr;
@@ -39,9 +47,27 @@ private:
 
     mutable std::vector<const Object*> children;
 
-    void updateTransforms() const;
+    
     void removeFromParent();
 
     Object& operator= (const Object&)   = delete;
+
+};
+
+class CameraObject: public Object
+{
+public:
+    explicit CameraObject(const Object& parent);
+
+    void setPerspective(float fov, float near, float far);
+
+    const Space getProjectionSpace(float aspectRatio) const;
+
+private:
+    float fov;
+    float near; 
+    float far;
+
+    CameraObject& operator= (const CameraObject&)   = delete;
 
 };

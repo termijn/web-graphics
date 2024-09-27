@@ -28,7 +28,7 @@ if (DEFINED EMSCRIPTEN)
         )
 
     file(GLOB_RECURSE SHADER_REFERENCES ${CMAKE_CURRENT_SOURCE_DIR}/shaders/*.glsl)
-    set_property(TARGET Viewer PROPERTY LINK_DEPENDS ${SHADER_REFERENCES})
+    set_property(TARGET Viewer PROPERTY LINK_DEPENDS ${SHADER_REFERENCES} ${CMAKE_CURRENT_SOURCE_DIR}/index.html)
 
     # set_property(TARGET Viewer PROPERTY LINK_DEPENDS 
     #     ${CMAKE_CURRENT_SOURCE_DIR}/shaders/frag.glsl

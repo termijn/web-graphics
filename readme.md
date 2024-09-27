@@ -1,13 +1,23 @@
-# Emscripten based webgl 2 renderer
+# Emscripten-based webgl 2 renderer
 
-A web renderer aimed at displaying and interacting with 3d scenes. 
+A web renderer displaying and interacting with 3d scenes. Built to experiment and learn webassembly and webgl 2. 
 
 ![A knot mesh](/images/screenshot.png)
 s
 ## Features: 
 - Scene graph
-- Shadow map
+- Softened shadow map
 - Pbr lighting
+
+## Ideas
+- Refactor shadow map / renderer / renderpass. 
+- Separate graphics layer to allow multi api support
+- User interaction (roll, zoom, pan)
+- Picking
+- Color / texture support
+- gltf loading support
+- BVH tree
+- AABB intersection testing
 
 ## Getting started
 Before opening vs code, first call

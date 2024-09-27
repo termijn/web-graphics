@@ -13,10 +13,6 @@ ShadowMap::ShadowMap(VertexBufferPool& vertexBufferPool_)
 
 ShadowMap::~ShadowMap() = default;
 
-// References:
-// https://www.opengl-tutorial.org/es/intermediate-tutorials/tutorial-16-shadow-mapping/
-// https://webgl2fundamentals.org/webgl/lessons/webgl-shadows.html
-// https://learnwebgl.brown37.net/11_advanced_rendering/shadows.html
 void ShadowMap::init()
 {
     Renderer::init();
@@ -52,23 +48,16 @@ void ShadowMap::init()
     locationModel           = glGetUniformLocation(program, "model");
 }
 
-void ShadowMap::render(float aspectRatio, const glm::mat4& view, const std::vector<const Renderable*>& renderables) const
+void ShadowMap::render(const glm::mat4& view_, const glm::mat4& projection_, const std::vector<const Renderable*>& renderables) const
 {
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
     glViewport(0, 0, width, height);
     glClear(GL_DEPTH_BUFFER_BIT);
 
-    Renderer::render(aspectRatio, view, renderables);
+    Renderer::render(view_, projection_, renderables);
 }
 
-glm::mat4 ShadowMap::getView(const glm::mat4& worldToLight)
-{
-    projection  = getProjection();
-    view        = worldToLight;
-    return view;
-}
-
-glm::mat4 ShadowMap::getProjection()
+glm::mat4 ShadowMap::getProjection() const
 {
     return glm::perspective<float>(glm::radians(90.0f),1.0f, 1.0f, 200.0f);
 }
@@ -78,10 +67,10 @@ GLint ShadowMap::getDepthTexture()
     return depthTexture;
 }
 
-void ShadowMap::setUniforms(float aspectRatio, const Renderable &renderable) const
+void ShadowMap::setUniforms(const Renderable &renderable) const
 {
     glUniformMatrix4fv(locationViewUniform, 1, GL_FALSE, value_ptr(view));
-    glUniformMatrix4fv(locationProjection, 1, GL_FALSE, value_ptr(projection));
+    glUniformMatrix4fv(locationProjection, 1, GL_FALSE, value_ptr(getProjection()));
 
     glm::mat4 model = renderable.object.getSpace().toRoot;
     glUniformMatrix4fv(locationModel, 1, GL_FALSE, value_ptr(model));

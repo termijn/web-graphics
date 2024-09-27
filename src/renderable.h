@@ -11,7 +11,6 @@ public:
     float       roughness   = 0.6;
     float       metallic    = 0.2;
 
-    bool        lit         = true;
     bool        castsShadow = true;
 };
 

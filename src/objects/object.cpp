@@ -1,4 +1,7 @@
 #include "object.h"
+#include <glm/gtc/matrix_transform.hpp> 
+
+using namespace glm;
 
 Object::Object()
 {
@@ -40,6 +43,12 @@ void Object::setTransform(const glm::mat4 &toParent_)
     updateTransforms();
 }
 
+void Object::lookAt(const glm::vec3 &from, const glm::vec3 &to, const glm::vec3 &up)
+{
+    glm::mat4 fromParent = glm::lookAt(from, to, up);
+    setTransform(glm::inverse(fromParent));
+}
+
 Space Object::getSpace() const
 {
     return space;
@@ -79,10 +88,36 @@ glm::mat4 Space::to(const Space &target) const
 
 glm::vec3 Space::transformPos(const glm::vec3 &position, const Space &targetSpace) const
 {
-    return to(targetSpace) * glm::vec4(position, 1.0);
+    glm::vec4 result = to(targetSpace) * glm::vec4(position, 1.0);
+    result /= result.w;
+    return result;
 }
 
 glm::vec3 Space::transformDir(const glm::vec3 &direction, const Space &targetSpace) const
 {
     return to(targetSpace) * glm::vec4(direction, 0.0);
+}
+
+CameraObject::CameraObject(const Object &parent)
+    : Object(parent)
+{
+}
+
+void CameraObject::setPerspective(float fov_, float near_, float far_)
+{
+    fov     = fov_;
+    near    = near_;
+    far     = far_;
+    updateTransforms();
+}
+
+const Space CameraObject::getProjectionSpace(float aspectRatio) const
+{
+    mat4 projection = perspective(fov, aspectRatio, near, far);
+
+    Space projectionSpace;
+    projectionSpace.fromRoot  = projection * getSpace().fromRoot;
+    projectionSpace.toRoot    = inverse(projectionSpace.fromRoot);
+
+    return projectionSpace;
 }

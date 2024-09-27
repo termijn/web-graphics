@@ -13,15 +13,15 @@ public:
 
     void init() override;
 
-    void render(float aspectRatio, const glm::mat4& view, const std::vector<const Renderable*>& renderables) const override;
+    void render(const glm::mat4& view, const glm::mat4& projection, const std::vector<const Renderable*>& renderables) const override;
 
-    glm::mat4 getView(const glm::mat4& worldToView);
-    glm::mat4 getProjection();
+    glm::mat4 getView(const glm::mat4& worldToView) const;
+    glm::mat4 getProjection() const;
 
     GLint getDepthTexture();
 
 protected:
-    void setUniforms(float aspectRatio, const Renderable& renderable) const override;
+    void setUniforms(const Renderable& renderable) const override;
 
 private:
     int width = 2048;

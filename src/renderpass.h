@@ -15,12 +15,12 @@ public:
 
     void init() override;
 
-    void render(float aspectRatio, const glm::mat4& view, const std::vector<const Renderable*>& renderables) const override;
+    void render(const glm::mat4& view, const glm::mat4& projection, const std::vector<const Renderable*>& renderables) const override;
 
-    void setShadow(const glm::mat4& svp, GLint depthTexture);
+    void setShadow(const glm::mat4& worldToLight, GLint depthTexture);
 
 protected:
-    void setUniforms(float aspectRatio, const Renderable& renderable) const override;
+    void setUniforms(const Renderable& renderable) const override;
 
     GLint  locationViewUniform;
     GLint  locationLightDirection;

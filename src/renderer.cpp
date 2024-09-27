@@ -30,9 +30,10 @@ void Renderer::init()
     glLinkProgram   (program);
 }
 
-void Renderer::render(float aspectRatio, const glm::mat4 &view_, const std::vector<const Renderable *> &renderables) const
+void Renderer::render(const glm::mat4& view_, const glm::mat4& projection_, const std::vector<const Renderable *> &renderables) const
 {
-    view = view_;
+    view        = view_;
+    projection  = projection_;
 
     glUseProgram(program);
 
@@ -45,7 +46,7 @@ void Renderer::render(float aspectRatio, const glm::mat4 &view_, const std::vect
         vertexBuffer.setMesh(&renderable->mesh);
         vertexBuffer.bind(program);
 
-        setUniforms(aspectRatio, *renderable);
+        setUniforms(*renderable);
     
         glDrawElements(GL_TRIANGLES, vertexBuffer.getMesh().indices.size() * 3, GL_UNSIGNED_SHORT, 0);
         glCheckError();

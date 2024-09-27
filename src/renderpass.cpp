@@ -32,23 +32,23 @@ void RenderPass::init()
     locationDepthTexture    = glGetUniformLocation(program, "depthTexture");
 }
 
-void RenderPass::render(float aspectRatio, const glm::mat4 &view, const std::vector<const Renderable *> &renderables) const
+void RenderPass::render(const glm::mat4& view_, const glm::mat4& projection_, const std::vector<const Renderable *> &renderables) const
 {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, depthTexture);
 
-    Renderer::render(aspectRatio, view, renderables);
+    Renderer::render(view_, projection_, renderables);
 }
 
-void RenderPass::setShadow(const glm::mat4 &svp, GLint depthTexture_)
+void RenderPass::setShadow(const glm::mat4 &worldToLight, GLint depthTexture_)
 {
-    shadowMapViewProjection = svp;
+    shadowMapViewProjection = worldToLight;
     depthTexture            = depthTexture_;
 }
 
-void RenderPass::setUniforms(float aspectRatio, const Renderable &renderable) const
+void RenderPass::setUniforms(const Renderable &renderable) const
 {
     glUniformMatrix4fv(locationViewUniform, 1, GL_FALSE, value_ptr(view));
 
@@ -61,7 +61,6 @@ void RenderPass::setUniforms(float aspectRatio, const Renderable &renderable) co
     glUniform1f(locationMetallic, renderable.material.metallic);
     glUniform1f(locationRoughness, renderable.material.roughness);
 
-    projection = glm::perspective(glm::radians(35.0f), aspectRatio, 0.1f, 100.0f);
     glUniformMatrix4fv(locationProjection, 1, GL_FALSE, value_ptr(projection));
 
     glm::mat4 model = renderable.object.getSpace().toRoot;
