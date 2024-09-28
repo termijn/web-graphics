@@ -14,7 +14,7 @@ out vec3 fragPositionWorld;
 void main()
 {
     viewPositionWorld   = vec3(inverse(view)[3]);
-    Normal              = mat3(transpose(inverse(view * model))) * normal.xyz;
+    Normal              = mat3(transpose(inverse(model))) * normal.xyz;
     gl_Position         = projection * view * model * position;
     fragPositionWorld   = vec3(model * position);
 }

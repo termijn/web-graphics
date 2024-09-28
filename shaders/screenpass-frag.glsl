@@ -79,7 +79,7 @@ float shadow()
     float h = random(shadowCoord.xy);
 
     for(int i = 0; i < 4; ++i) {
-        vec2 offset = pcfOffsets[i] + (h - 0.5f) * texelSize * 2.0f;
+        vec2 offset = pcfOffsets[i] + (h - 0.5f) * texelSize * 4.0f;
         float sampleDepth = texture(depthTexture, shadowCoord.xy + offset).r;
         if(currentDepth > sampleDepth + 0.001f) {
             shadowDepth += 1.0f;
@@ -94,17 +94,15 @@ float shadow()
 }
 
 void main() {
-    // Normalize vectors
-    vec3 norm = normalize(Normal);
 
-    vec3 lightDir = normalize(lightPositionWorld - fragPositionWorld);
-    //vec3 lightDir = -normalize(vec3(-1,-1,-1));
-
-       // Outgoing light direction (vector from world-space fragment position to the "eye").
+    // Outgoing light direction (vector from world-space fragment position to the "eye").
     vec3 Lo = normalize(viewPositionWorld - fragPositionWorld);
 
+    // Direction from fragment position to the light in world space.
+    vec3 Li = normalize(lightPositionWorld - fragPositionWorld);
+
     // Get current fragment's normal and transform to world space.
-    vec3 N = norm;
+    vec3 N = normalize(Normal);
 
     // Angle between surface normal and outgoing light direction.
     float cosLo = max(0.0f, dot(N, Lo));
@@ -115,7 +113,7 @@ void main() {
     vec3 directLighting = vec3(0);
     // Light
     {
-        vec3 Li = lightDir;
+       
         vec3 Lradiance = lightColor;
 
         // Half-vector between Li and Lo.
@@ -149,8 +147,8 @@ void main() {
         directLighting += (diffuseBRDF + specularBRDF) * Lradiance * cosLi;
     }
 
+    // Add some ambient light, todo: make uniform
     float ambientStrength = 0.3f;
-    // Calculate the ambient light
     vec3 ambient = ambientStrength * baseColor * lightColor;
 
     vec3 finalColor =  directLighting + ambient;

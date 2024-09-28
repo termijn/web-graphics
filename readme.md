@@ -7,15 +7,13 @@ A web renderer displaying and interacting with 3d scenes. Built to experiment an
 ## Features: 
 - Scene graph
 - Softened shadow map
-- Pbr lighting
+- PBR lighting
 
 ## Ideas
-- Refactor shadow map / renderer / renderpass. 
-- Separate graphics layer to allow multi api support
+- gltf loading support
 - User interaction (roll, zoom, pan)
 - Picking
-- Color / texture support
-- gltf loading support
+- Color / texture supports
 - BVH tree
 - AABB intersection testing
 
