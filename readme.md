@@ -2,6 +2,8 @@
 
 A web renderer displaying and interacting with 3d scenes. Built to experiment and learn webassembly and webgl 2. 
 
+See the renderer in action at [Github Pages](https://termijn.github.io/Viewer.html)
+
 ![A knot mesh](/images/screenshot.png)
 
 ## Features: 
@@ -10,7 +12,9 @@ A web renderer displaying and interacting with 3d scenes. Built to experiment an
 - PBR lighting
 
 ## Ideas
+- Screen space ambient occlusion
 - gltf loading support
+- Higher quality soft shadows
 - User interaction (roll, zoom, pan)
 - Picking
 - Color / texture supports

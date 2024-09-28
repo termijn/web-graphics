@@ -34,4 +34,6 @@ if (DEFINED EMSCRIPTEN)
 
 endif()
 
-target_include_directories(Viewer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/ext ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_include_directories(Viewer PUBLIC 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/ext)
