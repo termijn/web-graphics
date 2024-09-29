@@ -12,6 +12,7 @@ public:
     float       metallic    = 0.2;
 
     bool        castsShadow = true;
+    bool        shaded      = true;
 };
 
 class Renderable

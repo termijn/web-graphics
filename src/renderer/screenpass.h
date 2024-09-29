@@ -34,6 +34,8 @@ protected:
     GLint  locationModel;
     GLint  locationShadowVP;
     GLint  locationDepthTexture;
+    GLint  locationShaded;
+
 
     glm::vec3   lightPosWorld;
     glm::mat4   shadowMapViewProjection;

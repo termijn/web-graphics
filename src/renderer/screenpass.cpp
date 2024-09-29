@@ -32,6 +32,7 @@ void ScreenPass::init()
     locationModel               = glGetUniformLocation(program, "model");
     locationShadowVP            = glGetUniformLocation(program, "shadowVP");
     locationDepthTexture        = glGetUniformLocation(program, "depthTexture");
+    locationShaded              = glGetUniformLocation(program, "shaded");
 }
 
 void ScreenPass::renderPre(const glm::mat4 &view, const glm::mat4 &projection)
@@ -54,6 +55,8 @@ void ScreenPass::setShadow(const mat4 &worldToLight, const vec3& lightPosWorld_,
 
 void ScreenPass::setUniforms(const Renderable &renderable) const
 {
+    glUniform1i(locationShaded, renderable.material.shaded ? 1 : 0);
+    
     glUniformMatrix4fv(locationViewUniform, 1, GL_FALSE, value_ptr(view));
 
     glUniform3f(locationLightColor, 1.0f, 1.0f, 1.0f);

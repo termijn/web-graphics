@@ -33,12 +33,12 @@ int main(int argc, char** argv)
     knotObject   .setTransform(translate(scale(mat4(1.0), vec3(30)), vec3(0,-0.46,0)));
     sphereObject .setTransform(translate(mat4(1.0), vec3(0.0, 0, 0)));
     cubeObject   .setTransform(scale(translate(mat4(1.0), vec3(0, -15, 0)), vec3(500.0, 0.1, 500)));
-    lightObject  .lookAt(vec3(10,10,10), vec3(0,-10,-2), vec3(0,1,0));
+    lightObject  .lookAt(vec3(10,20,10), vec3(0,-10,-2), vec3(0,1,0));
 
     Renderable knotRenderable(knotObject);
     knotRenderable.mesh = loadModel("/package/models/couch.glb");
     knotRenderable.material.roughness   = 0.8891500234603882;
-    knotRenderable.material.metallic    = 0.0;
+    knotRenderable.material.metallic    = 0.4;
 
     Renderable sphereRenderable(sphereObject);
     sphereRenderable.mesh.sphere(5, 100, 100);
@@ -50,6 +50,8 @@ int main(int argc, char** argv)
     cubeRenderable.mesh.cube(1);
     cubeRenderable.material.albedo      = vec3(1,1,1);
     cubeRenderable.material.roughness   = 0.1;
+    cubeRenderable.material.shaded      = false;
+    cubeRenderable.material.castsShadow = false;
     cubeRenderable.material.metallic    = 0.3;
     
     camera.lookAt(glm::vec3(0, 0, 50), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
@@ -69,7 +71,7 @@ int main(int argc, char** argv)
     Viewport viewport = Viewport(scheduler);
     viewport.attachCamera       (camera);
     viewport.attachRenderable   (knotRenderable);
-    //viewport.attachRenderable   (sphereRenderable);
+    viewport.attachRenderable   (sphereRenderable);
     viewport.attachRenderable   (cubeRenderable);
     viewport.attachLight        (lightObject);
 
