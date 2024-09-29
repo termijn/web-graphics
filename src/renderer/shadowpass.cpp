@@ -9,7 +9,7 @@
 using namespace glm;
 
 ShadowPass::ShadowPass(VertexBufferPool& vertexBufferPool_)
-    : RenderPass("/shaders/shadowmap-vertex.glsl", "/shaders/shadowmap-frag.glsl", vertexBufferPool_)
+    : RenderPass("/package/shaders/shadowmap-vertex.glsl", "/package/shaders/shadowmap-frag.glsl", vertexBufferPool_)
 {
 
 }

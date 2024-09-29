@@ -10,7 +10,7 @@
 using namespace glm;
 
 ScreenPass::ScreenPass(VertexBufferPool& vertexBufferPool_)
-    : RenderPass("/shaders/screenpass-vertex.glsl", "/shaders/screenpass-frag.glsl", vertexBufferPool_)
+    : RenderPass("/package/shaders/screenpass-vertex.glsl", "/package/shaders/screenpass-frag.glsl", vertexBufferPool_)
 {
 }
 

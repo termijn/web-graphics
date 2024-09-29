@@ -5,7 +5,7 @@ project(WebGL)
 add_definitions(-std=c++20)
 set(CMAKE_CXX_STANDARD 20)
 
-file(GLOB_RECURSE ViewerSRC ${CMAKE_CURRENT_SOURCE_DIR}/src *.cpp)
+file(GLOB_RECURSE ViewerSRC ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
 
 if (DEFINED EMSCRIPTEN)
     add_executable(Viewer ${ViewerSRC})
@@ -24,11 +24,15 @@ if (DEFINED EMSCRIPTEN)
         -sFULL_ES3=1 
         -sWASM=1 
         --shell-file=../index.html
-        --preload-file=${CMAKE_CURRENT_SOURCE_DIR}/shaders@/shaders
+        --preload-file=${CMAKE_CURRENT_SOURCE_DIR}/package@/package
         )
 
-    file(GLOB_RECURSE SHADER_REFERENCES ${CMAKE_CURRENT_SOURCE_DIR}/shaders/*.glsl)
-    set_property(TARGET Viewer PROPERTY LINK_DEPENDS ${SHADER_REFERENCES} ${CMAKE_CURRENT_SOURCE_DIR}/index.html)
+    file(GLOB_RECURSE SHADER_REFERENCES ${CMAKE_CURRENT_SOURCE_DIR}/package/shaders/*.glsl)
+    file(GLOB_RECURSE MODEL_REFERENCES ${CMAKE_CURRENT_SOURCE_DIR}/package/models/*.glb)
+    set_property(TARGET Viewer PROPERTY LINK_DEPENDS 
+        ${SHADER_REFERENCES}
+        ${MODEL_REFERENCES}
+        ${CMAKE_CURRENT_SOURCE_DIR}/index.html)
 
     target_compile_definitions(Viewer PUBLIC "$<$<CONFIG:DEBUG>:DEBUG>")
 
