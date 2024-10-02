@@ -1,4 +1,4 @@
-# Emscriptem-based webgl 2 renderer
+# Emscripten-based webgl 2 renderer
 
 A web renderer for gltf models. Built to experiment and learn webassembly and webgl 2. 
 
