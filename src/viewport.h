@@ -34,7 +34,9 @@ private:
     const Object*           light   = nullptr;
 
     VertexBufferPool    vertexBufferPool;
-    ScreenPass          screenPass  = ScreenPass(vertexBufferPool);
+    TexturePool         texturePool;
+    
+    ScreenPass          screenPass  = ScreenPass(vertexBufferPool, texturePool);
     ShadowPass          shadowPass  = ShadowPass(vertexBufferPool);
 
     std::vector<const Renderable*> renderables;

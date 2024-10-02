@@ -49,7 +49,8 @@ private:
 
     void removeFromParent();
 
-    Object& operator= (const Object&)   = delete;
+    Object&  operator= (const Object&)   = delete;
+    Object&& operator= (const Object&&)   = delete;
 
 };
 

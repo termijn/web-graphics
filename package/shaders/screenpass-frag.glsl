@@ -2,23 +2,27 @@
 
 precision mediump float;
 
-uniform vec3 lightPositionWorld;
-uniform vec3 lightColor;
+uniform vec3        lightPositionWorld;
+uniform vec3        lightColor;
+uniform mat4        shadowVP;
+uniform bool        shaded;
+uniform vec3        baseColor;  // Base color of the material
+uniform float       metallic;   // Metallic factor [0, 1]
+uniform float       roughness;  // Roughness factor [0, 1]
 
-uniform mat4 shadowVP;
+uniform sampler2D   depthTexture;
+uniform sampler2D   baseColorTexture;
+uniform sampler2D   metallicRoughnessTexture;
 
-uniform sampler2D depthTexture;
+uniform bool hasBaseColorTexture;
+uniform bool hasMetallicRoughnessTexture;
 
 in vec3 Normal;             // Normal of the fragment
 in vec3 fragPositionWorld;  // Fragment position in world space
 in vec3 viewPositionWorld;  // Camera position
+in vec2 uvBaseColor;
 
 out vec4 FragColor;
-
-uniform bool    shaded;
-uniform vec3    baseColor;  // Base color of the material
-uniform float   metallic;   // Metallic factor [0, 1]
-uniform float   roughness;  // Roughness factor [0, 1]
 
 // Constant normal incidence Fresnel factor for all dielectrics.
 const vec3 Fdielectric = vec3(0.04f);
@@ -68,7 +72,7 @@ float random(vec2 st) {
 
 float shadow()
 {
-    const float penumbraScale = 0.7;
+    const float penumbraScale = 0.1;
 
     vec4 shadowPos = shadowVP * vec4(fragPositionWorld, 1.0);
     shadowPos /= shadowPos.w;  // Perspective divide
@@ -105,17 +109,54 @@ float shadow()
     float shadow = (samples > 0) ? shadowDepth / float(samples) : 1.0;
 
     // Soft shadow factor
-    float shadowFactor = 0.3;
+    float shadowFactor = 0.4;
     return (1.0 - (shadowFactor * shadow));
 }
 
+vec3 linearToSRGB(vec3 color) {
+    vec3 result;
+
+    // Red channel
+    if (color.r <= 0.0031308) {
+        result.r = 12.92 * color.r;
+    } else {
+        result.r = 1.055 * pow(color.r, 1.0 / 2.4) - 0.055;
+    }
+
+    // Green channel
+    if (color.g <= 0.0031308) {
+        result.g = 12.92 * color.g;
+    } else {
+        result.g = 1.055 * pow(color.g, 1.0 / 2.4) - 0.055;
+    }
+
+    // Blue channel
+    if (color.b <= 0.0031308) {
+        result.b = 12.92 * color.b;
+    } else {
+        result.b = 1.055 * pow(color.b, 1.0 / 2.4) - 0.055;
+    }
+
+    return result;
+}
 
 void main() 
 {
+    vec3 finalColor = baseColor;
+    if (hasBaseColorTexture)
+        finalColor = baseColor * texture(baseColorTexture, uvBaseColor).rgb;
 
-    vec3 finalColor = vec3(baseColor);
+    vec3 albedo = finalColor;
+
     if (shaded) // TODO: compile separate shaders for performance.
     {
+        vec4 metallicRoughness = vec4(1.0);
+        if (hasMetallicRoughnessTexture)
+             metallicRoughness = texture(metallicRoughnessTexture, uvBaseColor);
+
+        float finalMetallic  = metallicRoughness.r * metallic;
+        float finalRoughness = metallicRoughness.g * roughness;
+
         // Outgoing light direction (vector from world-space fragment position to the "eye").
         vec3 Lo = normalize(viewPositionWorld - fragPositionWorld);
 
@@ -129,12 +170,12 @@ void main()
         float cosLo = max(0.0f, dot(N, Lo));
 
         // Fresnel reflectance at normal incidence (for metals use albedo color).
-        vec3 F0 = mix(Fdielectric, baseColor, vec3(metallic));
+        vec3 F0 = mix(Fdielectric, albedo, vec3(finalMetallic));
 
         vec3 directLighting = vec3(0);
-        // Light
-        {
         
+        // For a single light
+        {
             vec3 Lradiance = lightColor;
 
             // Half-vector between Li and Lo.
@@ -147,19 +188,19 @@ void main()
             // Calculate Fresnel term for direct lighting. 
             vec3 F = fresnelSchlick(F0, max(0.0f, dot(Lh, Li)));
             // Calculate normal distribution for specular BRDF.
-            float D = ndfGGX(cosLh, roughness);
+            float D = ndfGGX(cosLh, finalRoughness);
             // Calculate geometric attenuation for specular BRDF.
-            float G = gaSchlickGGX(cosLi, cosLo, roughness);
+            float G = gaSchlickGGX(cosLi, cosLo, finalRoughness);
 
             // Diffuse scattering happens due to light being refracted multiple times by a dielectric medium.
             // Metals on the other hand either reflect or absorb energy, so diffuse contribution is always zero.
             // To be energy conserving we must scale diffuse BRDF contribution based on Fresnel factor & metalness.
-            vec3 kd = mix(vec3(1.0f) - F, vec3(0.0f), metallic);
+            vec3 kd = mix(vec3(1.0f) - F, vec3(0.0f), finalMetallic);
 
             // Lambert diffuse BRDF.
             // We don't scale by 1/PI for lighting & material units to be more convenient.
             // See: https://seblagarde.wordpress.com/2012/01/08/pi-or-not-to-pi-in-game-lighting-equation/
-            vec3 diffuseBRDF = kd * baseColor;
+            vec3 diffuseBRDF = kd * albedo;
 
             // Cook-Torrance specular microfacet BRDF.
             vec3 specularBRDF = (F * D * G) / max(Epsilon, 4.0f * cosLi * cosLo);
@@ -168,11 +209,13 @@ void main()
             directLighting += (diffuseBRDF + specularBRDF) * Lradiance * cosLi;
         }
         // Add some ambient light, todo: make uniform
-        float ambientStrength = 0.3f;
-        vec3 ambient = ambientStrength * baseColor * lightColor;
+        float ambientStrength = 0.2f;
+        vec3 ambient = ambientStrength * albedo * lightColor;
 
         finalColor =  directLighting + ambient;
     }
 
-    FragColor = vec4(finalColor * shadow(), 1.0f);
+    finalColor = finalColor * shadow();
+
+    FragColor = vec4(finalColor, 1.0f);
 }

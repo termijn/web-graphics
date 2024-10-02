@@ -9,8 +9,9 @@
 
 using namespace glm;
 
-ScreenPass::ScreenPass(VertexBufferPool& vertexBufferPool_)
+ScreenPass::ScreenPass(VertexBufferPool& vertexBufferPool_, TexturePool& texturePool_)
     : RenderPass("/package/shaders/screenpass-vertex.glsl", "/package/shaders/screenpass-frag.glsl", vertexBufferPool_)
+    , texturePool(texturePool_)
 {
 }
 
@@ -22,22 +23,29 @@ void ScreenPass::init()
 {
     RenderPass::init();
     
-    locationViewUniform         = glGetUniformLocation(program, "view");
-    locationLightColor          = glGetUniformLocation(program, "lightColor");
-    locationLightPositionWorld  = glGetUniformLocation(program, "lightPositionWorld");
-    locationBaseColor           = glGetUniformLocation(program, "baseColor");
-    locationMetallic            = glGetUniformLocation(program, "metallic");
-    locationRoughness           = glGetUniformLocation(program, "roughness");
-    locationProjection          = glGetUniformLocation(program, "projection");
-    locationModel               = glGetUniformLocation(program, "model");
-    locationShadowVP            = glGetUniformLocation(program, "shadowVP");
-    locationDepthTexture        = glGetUniformLocation(program, "depthTexture");
-    locationShaded              = glGetUniformLocation(program, "shaded");
+    locationViewUniform              = glGetUniformLocation(program, "view");
+    locationLightColor               = glGetUniformLocation(program, "lightColor");
+    locationLightPositionWorld       = glGetUniformLocation(program, "lightPositionWorld");
+    locationBaseColor                = glGetUniformLocation(program, "baseColor");
+    locationMetallic                 = glGetUniformLocation(program, "metallic");
+    locationRoughness                = glGetUniformLocation(program, "roughness");
+    locationProjection               = glGetUniformLocation(program, "projection");
+    locationModel                    = glGetUniformLocation(program, "model");
+    locationShadowVP                 = glGetUniformLocation(program, "shadowVP");
+    locationDepthTexture             = glGetUniformLocation(program, "depthTexture");
+    locationShaded                   = glGetUniformLocation(program, "shaded");
+
+    locationTextureBaseColor         = glGetUniformLocation(program, "baseColorTexture");
+    locationTextureMetallicRoughness = glGetUniformLocation(program, "metallicRoughnessTexture");
+
+    locationHasBaseColorTexture         = glGetUniformLocation(program, "hasBaseColorTexture");
+    locationHasMetallicRoughnessTexture = glGetUniformLocation(program, "hasMetallicRoughnessTexture");
 }
 
 void ScreenPass::renderPre(const glm::mat4 &view, const glm::mat4 &projection)
 {
     RenderPass::renderPre(view, projection);
+
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     glActiveTexture(GL_TEXTURE0);
@@ -70,7 +78,7 @@ void ScreenPass::setUniforms(const Renderable &renderable) const
 
     glUniform3fv(locationLightPositionWorld, 1, value_ptr(lightPosWorld));
 
-    mat4 model = renderable.object.getSpace().toRoot;
+    mat4 model = renderable.object->getSpace().toRoot;
     glUniformMatrix4fv(locationModel, 1, GL_FALSE, value_ptr(model));
 
     // mat4 shadowToTexture(
@@ -82,5 +90,29 @@ void ScreenPass::setUniforms(const Renderable &renderable) const
     // mat4 toTextureSpace = shadowToTexture * shadowMapViewProjection;
     glUniformMatrix4fv(locationShadowVP, 1, GL_FALSE, value_ptr(shadowMapViewProjection));
 
-    glUniform1i(locationDepthTexture, 0);  // Assign texture unit 0 to the sampler
+    glUniform1i(locationDepthTexture, 0);
+
+    if (renderable.material.baseColorTexture.has_value()) 
+    {
+        Texture& texture = texturePool.get(&renderable.material.baseColorTexture.value());
+        glUniform1i(locationTextureBaseColor, 1);
+        glUniform1i(locationHasBaseColorTexture, 1);
+        texture.bind(GL_TEXTURE1);
+    } 
+    else
+    {
+        glUniform1i(locationHasBaseColorTexture, 0); // Indicate there is no base color texture
+    }
+
+    if (renderable.material.metallicRoughness.has_value())
+    {
+        Texture& texture = texturePool.get(&renderable.material.metallicRoughness.value());
+        glUniform1i(locationTextureMetallicRoughness, 2);
+        glUniform1i(locationHasMetallicRoughnessTexture, 1);
+        texture.bind(GL_TEXTURE2);
+    } 
+    else
+    {
+        glUniform1i(locationHasMetallicRoughnessTexture, 0);
+    }
 }

@@ -7,12 +7,13 @@
 #include "renderer/renderpass.h"
 #include "renderer/vertexbuffer.h"
 #include "renderer/vertexbufferpool.h"
+#include "renderer/texturepool.h"
 #include "renderable.h"
 
 class ScreenPass: public RenderPass
 {
 public:
-    ScreenPass(VertexBufferPool& vertexBufferPool);
+    ScreenPass(VertexBufferPool& vertexBufferPool, TexturePool& texturePool);
     ~ScreenPass();
 
     void init() override;
@@ -35,11 +36,16 @@ protected:
     GLint  locationShadowVP;
     GLint  locationDepthTexture;
     GLint  locationShaded;
-
+    GLint  locationTextureBaseColor;
+    GLint  locationTextureMetallicRoughness;
+    GLint  locationHasBaseColorTexture;
+    GLint  locationHasMetallicRoughnessTexture;
 
     glm::vec3   lightPosWorld;
     glm::mat4   shadowMapViewProjection;
     GLint       depthTexture;
+
+    TexturePool& texturePool;
 
     ScreenPass (const ScreenPass&)              = delete;
     ScreenPass& operator= (const ScreenPass&)   = delete;

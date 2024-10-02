@@ -6,10 +6,12 @@ uniform mat4 model;
 
 layout(location = 0) in vec4 position;
 layout(location = 1) in vec4 normal;
+layout(location = 2) in vec2 uv;
 
 out vec3 Normal;
 out vec3 viewPositionWorld;
 out vec3 fragPositionWorld;
+out vec2 uvBaseColor;
 
 void main()
 {
@@ -17,4 +19,5 @@ void main()
     Normal              = mat3(transpose(inverse(model))) * normal.xyz;
     gl_Position         = projection * view * model * position;
     fragPositionWorld   = vec3(model * position);
+    uvBaseColor = uv;
 }

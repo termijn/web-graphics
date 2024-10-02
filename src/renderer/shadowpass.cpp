@@ -92,6 +92,6 @@ void ShadowPass::setUniforms(const Renderable &renderable) const
     glUniformMatrix4fv(locationViewUniform, 1, GL_FALSE, value_ptr(view));
     glUniformMatrix4fv(locationProjection, 1, GL_FALSE, value_ptr(getProjection()));
 
-    mat4 model = renderable.object.getSpace().toRoot;
+    mat4 model = renderable.object->getSpace().toRoot;
     glUniformMatrix4fv(locationModel, 1, GL_FALSE, value_ptr(model));
 }

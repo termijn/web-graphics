@@ -20,18 +20,23 @@ void VertexBuffer::bind(GLuint program)
 
     GLint posAttrib     = glGetAttribLocation(program, "position");
     GLint normalAttrib  = glGetAttribLocation(program, "normal");
+    GLint uvAttrib      = glGetAttribLocation(program, "uv");
 
     glEnableVertexAttribArray(posAttrib);
     
-    // The normal attribute is optional.
+    if (uvAttrib > -1)
+        glEnableVertexAttribArray(uvAttrib);
+    
     if (normalAttrib > -1)
         glEnableVertexAttribArray(normalAttrib);
 
     glVertexAttribPointer(posAttrib     , 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, position));
 
-    // The normal attribute is optional.
     if (normalAttrib > -1)
         glVertexAttribPointer(normalAttrib  , 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, normal));
+
+    if (uvAttrib > -1)
+        glVertexAttribPointer(uvAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, uv));
 
     glCheckError();
 }
