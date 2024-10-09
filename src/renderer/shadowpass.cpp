@@ -8,8 +8,8 @@
 
 using namespace glm;
 
-ShadowPass::ShadowPass(VertexBufferPool& vertexBufferPool_)
-    : RenderPass("/package/shaders/shadowmap-vertex.glsl", "/package/shaders/shadowmap-frag.glsl", vertexBufferPool_)
+ShadowPass::ShadowPass(GpuPool& gpuPool_)
+    : RenderPass("/package/shaders/shadowmap-vertex.glsl", "/package/shaders/shadowmap-frag.glsl", gpuPool_)
 {
 
 }
@@ -58,6 +58,7 @@ void ShadowPass::renderPre(const glm::mat4 &view_, const glm::mat4 &projection_)
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
     glViewport(0, 0, width, height);
     glClear(GL_DEPTH_BUFFER_BIT);
+    glCullFace(GL_FRONT);
 }
 
 void ShadowPass::render(const std::vector<const Renderable*>& renderables) const
@@ -66,7 +67,7 @@ void ShadowPass::render(const std::vector<const Renderable*>& renderables) const
     {
         if (!renderable->material.castsShadow) continue;
         
-        VertexBuffer& vertexBuffer = vertexBufferPool.get(renderable);
+        VertexBuffer& vertexBuffer = gpuPool.get(renderable);
         vertexBuffer.setMesh(&renderable->mesh);
         vertexBuffer.bind(program);
 

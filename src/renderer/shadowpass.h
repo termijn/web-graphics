@@ -8,7 +8,7 @@
 class ShadowPass: public RenderPass
 {
 public:
-    ShadowPass(VertexBufferPool& vertexBufferPool);
+    ShadowPass(GpuPool& gpuPool);
     ~ShadowPass();
 
     void init() override;
@@ -25,7 +25,7 @@ protected:
     void setUniforms(const Renderable& renderable) const override;
 
 private:
-    int width = 2048;
+    int width  = 2048;
     int height = 2048;
     
     GLuint depthTexture;

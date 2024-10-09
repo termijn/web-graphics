@@ -9,10 +9,10 @@
 
 using namespace glm;
 
-ScreenPass::ScreenPass(VertexBufferPool& vertexBufferPool_, TexturePool& texturePool_)
-    : RenderPass("/package/shaders/screenpass-vertex.glsl", "/package/shaders/screenpass-frag.glsl", vertexBufferPool_)
-    , texturePool(texturePool_)
+ScreenPass::ScreenPass(GpuPool& gpuPool_)
+    : RenderPass("/package/shaders/screenpass-vertex.glsl", "/package/shaders/screenpass-frag.glsl", gpuPool_)
 {
+    nrPoissonSamples = poissonImage.makePoissonDisc(128, 128, 4);
 }
 
 ScreenPass::~ScreenPass()
@@ -40,6 +40,8 @@ void ScreenPass::init()
 
     locationHasBaseColorTexture         = glGetUniformLocation(program, "hasBaseColorTexture");
     locationHasMetallicRoughnessTexture = glGetUniformLocation(program, "hasMetallicRoughnessTexture");
+    locationPoissonTexture              = glGetUniformLocation(program, "poissonTexture");
+    locationNrPoissonSamples            = glGetUniformLocation(program, "nrPoissonSamples");
 }
 
 void ScreenPass::renderPre(const glm::mat4 &view, const glm::mat4 &projection)
@@ -81,20 +83,13 @@ void ScreenPass::setUniforms(const Renderable &renderable) const
     mat4 model = renderable.object->getSpace().toRoot;
     glUniformMatrix4fv(locationModel, 1, GL_FALSE, value_ptr(model));
 
-    // mat4 shadowToTexture(
-    //     0.5, 0.0, 0.0, 0.0,
-    //     0.0, 0.5, 0.0, 0.0,
-    //     0.0, 0.0, 0.5, 0.0,
-    //     0.5, 0.5, 0.5, 1.0
-    //     );
-    // mat4 toTextureSpace = shadowToTexture * shadowMapViewProjection;
     glUniformMatrix4fv(locationShadowVP, 1, GL_FALSE, value_ptr(shadowMapViewProjection));
 
     glUniform1i(locationDepthTexture, 0);
 
     if (renderable.material.baseColorTexture.has_value()) 
     {
-        Texture& texture = texturePool.get(&renderable.material.baseColorTexture.value());
+        Texture& texture = gpuPool.get(&renderable.material.baseColorTexture.value());
         glUniform1i(locationTextureBaseColor, 1);
         glUniform1i(locationHasBaseColorTexture, 1);
         texture.bind(GL_TEXTURE1);
@@ -106,7 +101,7 @@ void ScreenPass::setUniforms(const Renderable &renderable) const
 
     if (renderable.material.metallicRoughness.has_value())
     {
-        Texture& texture = texturePool.get(&renderable.material.metallicRoughness.value());
+        Texture& texture = gpuPool.get(&renderable.material.metallicRoughness.value());
         glUniform1i(locationTextureMetallicRoughness, 2);
         glUniform1i(locationHasMetallicRoughnessTexture, 1);
         texture.bind(GL_TEXTURE2);
@@ -115,4 +110,10 @@ void ScreenPass::setUniforms(const Renderable &renderable) const
     {
         glUniform1i(locationHasMetallicRoughnessTexture, 0);
     }
+
+    Texture& poissonTexture = gpuPool.get(&poissonImage);
+    glUniform1i(locationPoissonTexture, 3);
+    poissonTexture.bind(GL_TEXTURE3);
+
+    glUniform1i(locationNrPoissonSamples, nrPoissonSamples);
 }

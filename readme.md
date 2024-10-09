@@ -1,19 +1,18 @@
 # Emscripten-based webgl 2 renderer
 
-A web renderer displaying and interacting with 3d scenes. Built to experiment and learn webassembly and webgl 2. 
+A web renderer displaying 3d scenes. Built to experiment and learn webassembly and webgl 2. 
 
 See the renderer in action at [Github Pages](https://termijn.github.io/index.html)
 
-![A knot mesh](/images/screenshot.png)
+![Example rendering of a chair](/images/screenshot.png)
 
-## Features: 
+## Features
 - Scene graph
 - Softened shadow map
 - PBR lighting
+- gltf binary scene loading
 
 ## Ideas
-- Screen space ambient occlusion
-- gltf loading support
 - Higher quality soft shadows
 - User interaction (roll, zoom, pan)
 - Picking

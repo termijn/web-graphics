@@ -10,8 +10,8 @@
 
 using namespace glm;
 
-RenderPass::RenderPass(const std::string &vertexShaderFileName_, const std::string &fragmentShaderFileName_, VertexBufferPool&  vertexBufferPool_)
-    : vertexBufferPool      (vertexBufferPool_)
+RenderPass::RenderPass(const std::string &vertexShaderFileName_, const std::string &fragmentShaderFileName_, GpuPool& gpuPool_)
+    : gpuPool               (gpuPool_)
     , vertexShaderFileName  (vertexShaderFileName_)
     , fragmentShaderFileName(fragmentShaderFileName_)
 {
@@ -48,7 +48,7 @@ void RenderPass::render(const std::vector<const Renderable *> &renderables) cons
 {
     for (const Renderable* renderable : renderables)
     {
-        VertexBuffer& vertexBuffer = vertexBufferPool.get(renderable);
+        VertexBuffer& vertexBuffer = gpuPool.get(renderable);
         vertexBuffer.setMesh(&renderable->mesh);
         vertexBuffer.bind(program);
 

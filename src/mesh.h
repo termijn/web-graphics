@@ -14,6 +14,7 @@ public:
 class Mesh
 {
 public:
+
     std::vector<Vertex>         vertices;
     std::vector<glm::u16vec3>   indices;
 

@@ -9,7 +9,7 @@
 
 #include "objects/object.h"
 
-#include "renderer/vertexbufferpool.h"
+#include "renderer/gpupool.h"
 #include "renderer/screenpass.h"
 #include "renderer/shadowpass.h"
 
@@ -33,11 +33,10 @@ private:
     const CameraObject*     camera  = nullptr;
     const Object*           light   = nullptr;
 
-    VertexBufferPool    vertexBufferPool;
-    TexturePool         texturePool;
+    GpuPool    gpuPool;
     
-    ScreenPass          screenPass  = ScreenPass(vertexBufferPool, texturePool);
-    ShadowPass          shadowPass  = ShadowPass(vertexBufferPool);
+    ScreenPass          screenPass  = ScreenPass(gpuPool);
+    ShadowPass          shadowPass  = ShadowPass(gpuPool);
 
     std::vector<const Renderable*> renderables;
 

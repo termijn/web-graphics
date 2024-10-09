@@ -17,7 +17,7 @@ void main()
 {
     viewPositionWorld   = vec3(inverse(view)[3]);
     Normal              = mat3(transpose(inverse(model))) * normal.xyz;
-    gl_Position         = projection * view * model * position;
     fragPositionWorld   = vec3(model * position);
-    uvBaseColor = uv;
+    gl_Position         = projection * view * model * position;
+    uvBaseColor         = uv;
 }

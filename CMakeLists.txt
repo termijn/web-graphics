@@ -21,6 +21,7 @@ if (DEFINED EMSCRIPTEN)
         -sUSE_WEBGL2=1 
         -sUSE_SDL=2 
         -sALLOW_MEMORY_GROWTH=1 
+        -sTOTAL_MEMORY=1024MB
         -sFULL_ES3=1 
         -sWASM=1 
         --shell-file=../index.html
