@@ -157,8 +157,6 @@ int Image::makePoissonDisc(int width_, int height_, int minDistance)
             uint8_t r = static_cast<uint8_t>(point.x / float(width_) * 255.0f);
             uint8_t g = static_cast<uint8_t>(point.y / float(height_) * 255.0f);
 
-            std::cout << "poisson sample: " << std::to_string(r) << "," << std::to_string(g) << std::endl;
-
             setPixel(xi, 0, r, g);
         }
         xi++;

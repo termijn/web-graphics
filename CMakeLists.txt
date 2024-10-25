@@ -14,14 +14,17 @@ if (DEFINED EMSCRIPTEN)
 
     target_compile_options(Viewer PUBLIC 
         -Os 
+        -g
         -sUSE_SDL=2)
+        
     target_link_options(Viewer PUBLIC
         -sMIN_WEBGL_VERSION=2
         -sMAX_WEBGL_VERSION=2
         -sUSE_WEBGL2=1 
         -sUSE_SDL=2 
         -sALLOW_MEMORY_GROWTH=1 
-        -sTOTAL_MEMORY=1024MB
+        -sTOTAL_MEMORY=2048MB
+        -sNO_DISABLE_EXCEPTION_CATCHING
         -sFULL_ES3=1 
         -sWASM=1 
         --shell-file=../index.html

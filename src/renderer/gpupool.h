@@ -14,7 +14,7 @@ public:
     GpuPool();
     ~GpuPool();
 
-    Texture&        get(const Image* image);
+    Texture&        get(const Image* image, Texture::Interpolation interpolation);
     VertexBuffer&   get(const Renderable* renderable);
 
 private:

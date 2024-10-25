@@ -11,7 +11,8 @@
 class RenderableObject
 {
 public:
-    RenderableObject(const Object& parentObject);
+    RenderableObject(const Object& parent);
+    virtual ~RenderableObject();
 
     Object&     getObject();
     Renderable& getRenderable();

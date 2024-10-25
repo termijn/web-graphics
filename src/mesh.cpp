@@ -1,6 +1,87 @@
 #include "mesh.h"
+#include "iostream"
 
 using namespace glm;
+
+void Mesh::generateNormals()
+{
+    // TODO: not yet implemented
+}
+
+void Mesh::generateBoundingBox()
+{
+    boundingBox.min = glm::vec3(90000000.0f);
+    boundingBox.max = glm::vec3(-90000000.0f);
+
+    for(auto& vertex: vertices)
+        boundingBox.expand(vertex.position);
+}
+
+void Mesh::generateTangentVectors()
+{
+    if (vertices.empty() || indices.empty()) return;
+
+    for (const auto& index : indices) 
+    {
+        Vertex& v0 = vertices[index.x];
+        Vertex& v1 = vertices[index.y];
+        Vertex& v2 = vertices[index.z];
+
+        glm::vec3 pos1 = glm::vec3(v0.position);
+        glm::vec3 pos2 = glm::vec3(v1.position);
+        glm::vec3 pos3 = glm::vec3(v2.position);
+
+        glm::vec2 uv1 = v0.uv;
+        glm::vec2 uv2 = v1.uv;
+        glm::vec2 uv3 = v2.uv;
+
+        glm::vec3 edge1 = pos2 - pos1;
+        glm::vec3 edge2 = pos3 - pos1;
+
+        glm::vec2 deltaUV1 = uv2 - uv1;
+        glm::vec2 deltaUV2 = uv3 - uv1;
+
+        float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+
+        glm::vec3 tangent;
+        tangent.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
+        tangent.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
+        tangent.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
+        tangent = glm::normalize(tangent);
+
+        glm::vec3 bitangent;
+        bitangent.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
+        bitangent.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
+        bitangent.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
+        bitangent = glm::normalize(bitangent);
+
+        v0.tangent += glm::vec4(tangent, 0.0f);
+        v1.tangent += glm::vec4(tangent, 0.0f);
+        v2.tangent += glm::vec4(tangent, 0.0f);
+
+        v0.bitangent += glm::vec4(bitangent, 0.0f);
+        v1.bitangent += glm::vec4(bitangent, 0.0f);
+        v2.bitangent += glm::vec4(bitangent, 0.0f);
+    }
+
+    // Normalize tangents and apply Gram-Schmidt orthogonalization
+    for (auto& vertex : vertices) 
+    {
+        glm::vec3 normal    = glm::normalize(glm::vec3(vertex.normal));
+        glm::vec3 tangent   = glm::normalize(glm::vec3(vertex.tangent));
+
+        // Orthogonalize tangent
+        tangent = glm::normalize(tangent - glm::dot(tangent, normal) * normal);
+
+        // Recalculate the bitangent
+        glm::vec3 bitangent = glm::cross(normal, tangent);
+
+        // Check and fix handedness
+        float handedness    = (glm::dot(glm::cross(normal, tangent), glm::vec3(vertex.bitangent)) < 0.0f) ? -1.0f : 1.0f;
+        vertex.tangent      = glm::vec4(tangent, handedness);
+        vertex.bitangent    = glm::vec4(bitangent, 0.0f);
+    }
+}
 
 void Mesh::cube(float size)
 {
@@ -194,3 +275,18 @@ void Mesh::sphere(float radius, int rings, int sectors)
     }
 }
 
+glm::vec3 Box::center() const
+{
+    return (min + max) * 0.5f;
+}
+
+void Box::expand(const glm::vec3 &point)
+{
+    min.x = std::min(min.x, point.x);
+    min.y = std::min(min.y, point.y);
+    min.z = std::min(min.z, point.z);
+
+    max.x = std::max(max.x, point.x);
+    max.y = std::max(max.y, point.y);
+    max.z = std::max(max.z, point.z);
+}

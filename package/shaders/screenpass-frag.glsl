@@ -4,30 +4,60 @@ precision highp float;
 
 uniform vec3        lightPositionWorld;
 uniform vec3        lightColor;
+
 uniform mat4        shadowVP;   // Transforms from world to the light space frustum
-uniform bool        shaded;
+uniform bool        shaded;     // Indicates whether to apply the lighting model
 uniform vec3        baseColor;  // Base color of the material
 uniform float       metallic;   // Metallic factor [0, 1]
 uniform float       roughness;  // Roughness factor [0, 1]
-uniform int         nrPoissonSamples;
+
+uniform int         nrPoissonSamples; 
 
 uniform sampler2D   depthTexture;
 uniform sampler2D   baseColorTexture;
 uniform sampler2D   metallicRoughnessTexture;
+
 uniform sampler2D   poissonTexture; // A texture of size [nrPoissonSamples, 1] with 2d points distributed according to a poisson pattern
 
 uniform bool hasBaseColorTexture;
 uniform bool hasMetallicRoughnessTexture;
 
+struct NormalMap
+{
+    bool        hasNormalMap;
+    sampler2D   texture;
+    float       scale;
+};
+
+struct Emissive
+{
+    bool        hasEmissiveTexture;
+    sampler2D   emissiveTexture;
+};
+
+uniform Emissive emissive;
+
+uniform NormalMap normalMap;
+
+struct Occlusion
+{
+    bool        hasOcclusionMap;
+    sampler2D   occlusionMap;
+};
+uniform Occlusion occlusion;
+
 in vec3 Normal;             // Normal of the fragment
 in vec3 fragPositionWorld;  // Fragment position in world space
 in vec3 viewPositionWorld;  // Camera position
 in vec2 uvBaseColor;
+in vec3 fragTangent;
+in vec3 fragBitangent;
 
 out vec4 FragColor;
 
 // Constant normal incidence Fresnel factor for all dielectrics.
-const vec3 Fdielectric = vec3(0.04f);
+// 1% reflectance for dielectrics
+const vec3 Fdielectric = vec3(0.1f);
 
 const float M_PI = 3.1415926535897932384f;
 const float Epsilon = 0.00001f;
@@ -75,12 +105,12 @@ float pcf(vec3 shadowCoord, int dimensions)
     for (int i = 0; i < nrPoissonSamples; i++)
     {
         vec2 offsetInPixels     = texture(poissonTexture, vec2(float(i) / float(nrPoissonSamples), 0)).xy - 0.5;
-        offsetInPixels          = offsetInPixels * 32.0;
-        
+        offsetInPixels          = offsetInPixels * (float(dimensions) * 0.5) ;
+
         vec2 offset = offsetInPixels * texelSize;
 
         float shadowMapDepth = texture(depthTexture, shadowCoord.xy + offset).r;
-        
+
         shadow += shadowCoord.z > shadowMapDepth ? 1.0 : 0.0;
         sampleCount++;
     }
@@ -95,13 +125,31 @@ vec4 toLightSpace(vec4 coord)
     return result;
 }
 
+vec3 getNormalMap(vec3 surfaceNormal)
+{
+    vec3 result = surfaceNormal;
+    if (normalMap.hasNormalMap)
+    {
+        vec3 tangentNormal = texture(normalMap.texture, uvBaseColor).xyz * 2.0 - 1.0;
+        tangentNormal *= vec3(normalMap.scale, normalMap.scale, 1.0);
+
+        mat3 TBN = mat3(normalize(fragTangent), normalize(fragBitangent), normalize(surfaceNormal));
+        result = normalize(TBN * tangentNormal);
+    }
+    return result;
+}
+
 void main() 
 {
-    vec3 finalColor = baseColor;
+    vec3 albedo = baseColor;
     if (hasBaseColorTexture)
-        finalColor = baseColor * texture(baseColorTexture, uvBaseColor).rgb;
+        albedo = baseColor * pow(texture(baseColorTexture, uvBaseColor).rgb, vec3(2.2));
 
-    vec3 albedo = finalColor;
+    vec3 finalColor = albedo;
+
+    vec3 Lo         = normalize(viewPositionWorld - fragPositionWorld);
+    vec3 Li         = normalize(lightPositionWorld - fragPositionWorld);
+    vec3 N          = getNormalMap(Normal);
 
     if (shaded) // TODO: compile separate shaders for performance.
     {
@@ -112,9 +160,6 @@ void main()
         float finalMetallic  = metallicRoughness.r * metallic;
         float finalRoughness = metallicRoughness.g * roughness;
 
-        vec3 Lo         = normalize(viewPositionWorld - fragPositionWorld);
-        vec3 Li         = normalize(lightPositionWorld - fragPositionWorld);
-        vec3 N          = normalize(Normal);
         float cosLo     = max(0.0f, dot(N, Lo));
 
         // Fresnel reflectance at normal incidence (for metals use albedo color).
@@ -145,17 +190,29 @@ void main()
         }
         
         // Add some ambient light, todo: make uniform
-        float ambientStrength = 0.2f;
+        float ambientStrength = 0.0f;
         vec3 ambient = ambientStrength * albedo * lightColor;
 
         finalColor =  directLighting + ambient;
+
+        if (emissive.hasEmissiveTexture)
+            finalColor += pow(texture(emissive.emissiveTexture, uvBaseColor).rgb, vec3(2.2));
     }
 
-    vec3 biasedFragPos = fragPositionWorld + (Normal * 0.02);
-    vec4 fragInLightSpace = toLightSpace(vec4(biasedFragPos, 1.0));
+    float angleBias         = max(0.001 * (1.0 - dot(N, Li)), 0.005);
+    vec3 biasedFragPos      = fragPositionWorld + (N * texelSize * angleBias);
+    vec4 fragInLightSpace   = toLightSpace(vec4(biasedFragPos, 1.0));
     
-    float shadow = pcf(fragInLightSpace.xyz, 16) * 0.4;
+    float shadow = pcf(fragInLightSpace.xyz, 16) * 0.7;
 
-    finalColor = finalColor * (1.0 - shadow);
-    FragColor = vec4(finalColor, 1.0f); 
+    finalColor  = finalColor * (1.0 - shadow);
+
+    if (occlusion.hasOcclusionMap)
+    {
+        float occlusionFactor = texture(occlusion.occlusionMap, uvBaseColor).r;
+        float strength = 1.0;
+        finalColor *= mix(1.0, occlusionFactor, strength);
+    }
+
+    FragColor   = vec4( pow(finalColor, vec3(1.0 / 2.2)), 1.0f); 
 }

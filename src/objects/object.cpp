@@ -1,6 +1,8 @@
 #include "object.h"
 #include <glm/gtc/matrix_transform.hpp> 
 
+#include <iostream>
+
 using namespace glm;
 
 Object::Object()
@@ -12,7 +14,7 @@ Object::Object(const Object &parent_)
 {
     assert(&parent_ != this);
 
-    parent_.children.emplace_back(this);
+    parent_.children.push_back(this);
     updateTransforms();
 }
 
@@ -26,7 +28,7 @@ void Object::adopt(const Object& parent_)
     removeFromParent();
 
     parent = &parent_;
-    parent->children.emplace_back(this);
+    parent->children.push_back(this);
 
     updateTransforms();
 }
@@ -73,10 +75,13 @@ void Object::updateTransforms() const
 
 void Object::removeFromParent()
 {
+    std::cout << "removeFromParent" << std::endl;
     if (parent != nullptr)
     {
+        std::cout << "removeFromParent - parent != nullptr" << std::endl;
         auto it = std::find(parent->children.begin(), parent->children.end(), this);
-        parent->children.erase(it);
+        if (it != parent->children.end())
+            parent->children.erase(it);
     }
     parent = nullptr;
 }

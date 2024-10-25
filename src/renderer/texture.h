@@ -4,12 +4,17 @@
 #include "image.h"
 
 class Texture
-{
+{    
 public:
+    enum class Interpolation {
+        Linear,
+        Nearest
+    };
+
     Texture();
     ~Texture();
 
-    void setImage(const Image& image);
+    void setImage(const Image& image, Interpolation interpolation);
 
     void bind(GLenum textureId);
 

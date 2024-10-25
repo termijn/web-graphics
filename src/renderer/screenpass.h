@@ -26,6 +26,7 @@ protected:
     void setUniforms(const Renderable& renderable) const override;
 
     GLint  locationViewUniform;
+    
     GLint  locationLightColor;
     GLint  locationLightPositionWorld;
     GLint  locationBaseColor;
@@ -42,6 +43,20 @@ protected:
     GLint  locationHasMetallicRoughnessTexture;
     GLint  locationPoissonTexture;
     GLint  locationNrPoissonSamples;
+
+    GLint  locationNormalsTexture;
+    GLint  locationHasNormalsTexture;
+    GLint  locationNormalMapScale;
+
+    GLint locationHasOcclusionMap;
+    GLint locationOcclusionMap;
+
+    GLint locationHasEmmissiveTexture;
+    GLint locationEmissiveTexture;
+
+    GLint locationTexOffset;
+    GLint locationTexScale;
+    GLint locationTexRotation;
 
     glm::vec3   lightPosWorld;
     glm::mat4   shadowMapViewProjection;

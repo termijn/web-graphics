@@ -4,17 +4,26 @@ A web renderer for gltf models. Built to experiment and learn webassembly and we
 
 See the renderer in action at [Github Pages](https://termijn.github.io/index.html)
 
-![Example rendering of a chair](/images/screenshot.png)
+![Example rendering of the gltf sample helmet](/images/helmet.png)
 
 ## Features
 - Scene graph
-- Softened dynamic shadow map
+- Clean API
+- Softened dynamic shadow map using poisson disc sampling
 - PBR lighting
+- Normal maps
+- Emmisive maps
+- Metallic / Roughness maps
+- Occlusion map
 - gltf loading support
 - gltf binary scene loading
 
-## Ideas
-- Improved quality PCSS shadows
+## Planned features
+- Mesh instancing
+- Texture resource sharing
+- Environment mapping
+- Multiple lights and Light intensity / color
+- HDR and tonemapping
 - User interaction (roll, zoom, pan)
 - Picking
 - BVH tree

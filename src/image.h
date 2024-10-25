@@ -2,19 +2,23 @@
 
 #include <vector>
 
-// TODO: make movable and shallow copyable, support multiple types
+// TODO: make movable and shallow copyable, support multiple types, preventing duplicate uploads
 class Image
 {
 public:
     enum class Type {
+        RGBA16,
         RGBA,
-        RG8
+        RGB,
+        RG8,
+        R8
     };
 
     int width;
     int height;
-    int bytesPerPixel = 4;
-    Type type = Type::RGBA;
+    
+    int bytesPerPixel       = 4;
+    Type type               = Type::RGBA;
 
     void setPixel(int x, int y, uint8_t value);
     void setPixel(int x, int y, uint8_t valueR, uint8_t valueG);

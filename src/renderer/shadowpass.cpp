@@ -41,7 +41,7 @@ void ShadowPass::init()
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     {
-        GLenum framebufferStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER); // GL_FRAMEBUFFER_INCOMPLETE_ATTACHMEN(0x8CD6)
+        GLenum framebufferStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         std::cout << "Invalid framebuffer " << framebufferStatus << std::endl;
     }
 
@@ -80,7 +80,7 @@ void ShadowPass::render(const std::vector<const Renderable*>& renderables) const
 
 mat4 ShadowPass::getProjection() const
 {
-    return perspective<float>(radians(120.0f),1.0f, 1.0f, 1000.0f);
+    return perspective<float>(radians(140.0f),1.0f, 1.0f, 5000.0f);
 }
 
 GLint ShadowPass::getDepthTexture()
