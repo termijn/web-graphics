@@ -5,6 +5,7 @@ A web renderer for gltf models. Built to experiment and learn webassembly and we
 See the renderer in action at [Github Pages](https://termijn.github.io/index.html)
 
 ![Example rendering of the gltf sample helmet](/images/helmet.png)
+![Example rendering of the gltf sample a beautiful game](/images/chess.png)
 
 ## Features
 - Scene graph
