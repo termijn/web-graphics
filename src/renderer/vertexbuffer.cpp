@@ -58,10 +58,10 @@ void VertexBuffer::bind(GLuint program)
 void VertexBuffer::setMesh(const Mesh* mesh_)
 {
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-    glBufferData(GL_ARRAY_BUFFER, mesh_->vertices.size() * sizeof(Vertex), mesh_->vertices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, mesh_->vertices().size() * sizeof(Vertex), mesh_->vertices().data(), GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferObject);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh_->indices.size() * sizeof(glm::u32vec3), mesh_->indices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh_->indices().size() * sizeof(glm::u32vec3), mesh_->indices().data(), GL_STATIC_DRAW);
 
     mesh = mesh_;
 }

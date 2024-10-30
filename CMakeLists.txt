@@ -22,8 +22,7 @@ if (DEFINED EMSCRIPTEN)
         -sMAX_WEBGL_VERSION=2
         -sUSE_WEBGL2=1 
         -sUSE_SDL=2 
-        -sALLOW_MEMORY_GROWTH=1 
-        -sTOTAL_MEMORY=2048MB
+        -sALLOW_MEMORY_GROWTH=1
         -sNO_DISABLE_EXCEPTION_CATCHING
         -sFULL_ES3=1 
         -sWASM=1 

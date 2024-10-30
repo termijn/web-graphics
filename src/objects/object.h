@@ -14,6 +14,9 @@ public:
     glm::vec3 transformPos  (const glm::vec3& position,     const Space& targetSpace) const;
     glm::vec3 transformDir  (const glm::vec3& direction,    const Space& targetSpace) const;
 
+    static glm::vec3 dir(const glm::vec3& direction,   const Space& from, const Space& to);
+    static glm::vec3 pos(const glm::vec3& pos,         const Space& from, const Space& to);
+
 };
 
 class Object
@@ -28,13 +31,15 @@ public:
     void orphan ();
 
     // Sets a new transformation to parent
-    void setTransform(const glm::mat4& toParent);
+    void        setTransform(const glm::mat4& toParent);
+    glm::mat4   getTransform() const;
 
     // Sets the origin at from, aligns the negative z-axis with to-from, respecting the up vector for the y-axis.
     // Positions and directions are defined with respect to the parent Object
     void lookAt(const glm::vec3& from, const glm::vec3& to, const glm::vec3& up);
 
     Space getSpace() const;
+    Space getParentSpace() const;
 
 protected:
     virtual void updateTransforms() const;

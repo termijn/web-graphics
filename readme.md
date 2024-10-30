@@ -25,7 +25,6 @@ See the renderer in action at [Github Pages](https://termijn.github.io/index.htm
 - Environment mapping
 - Multiple lights and Light intensity / color
 - HDR and tonemapping
-- User interaction (roll, zoom, pan)
 - Picking
 - BVH tree
 - AABB intersection testing

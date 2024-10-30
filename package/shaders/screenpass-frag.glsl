@@ -177,7 +177,7 @@ void main()
             float cosLi = max(0.0f, dot(N, Li));
             float cosLh = max(0.0f, dot(N, Lh));
 
-            vec3 F  = fresnelSchlick(F0, max(0.0f, dot(Lh, Li)));
+            vec3  F = fresnelSchlick(F0, max(0.0f, dot(Lh, Li)));
             float D = ndfGGX(cosLh, finalRoughness);
             float G = gaSchlickGGX(cosLi, cosLo, finalRoughness);
             vec3 kd = mix(vec3(1.0f) - F, vec3(0.0f), finalMetallic);
@@ -190,7 +190,7 @@ void main()
         }
         
         // Add some ambient light, todo: make uniform
-        float ambientStrength = 0.0f;
+        float ambientStrength = 0.0;
         vec3 ambient = ambientStrength * albedo * lightColor;
 
         finalColor =  directLighting + ambient;
@@ -199,8 +199,9 @@ void main()
             finalColor += pow(texture(emissive.emissiveTexture, uvBaseColor).rgb, vec3(2.2));
     }
 
-    float angleBias         = max(0.001 * (1.0 - dot(N, Li)), 0.005);
-    vec3 biasedFragPos      = fragPositionWorld + (N * texelSize * angleBias);
+    //float angleBias         = max(0.001 * (1.0 - dot(N, Li)), 0.005);
+    float normalOffset      = 0.1;
+    vec3 biasedFragPos      = fragPositionWorld + (N * normalOffset);
     vec4 fragInLightSpace   = toLightSpace(vec4(biasedFragPos, 1.0));
     
     float shadow = pcf(fragInLightSpace.xyz, 16) * 0.7;

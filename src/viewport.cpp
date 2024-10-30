@@ -86,3 +86,53 @@ void Viewport::render()
 
     SDL_GL_SwapWindow(window);
 }
+
+void Viewport::mouseDown(MouseButton button, const glm::vec3& position)
+{
+    std::cout << "mouseDown" << std::endl;
+    pressedButtons = static_cast<MouseButton>(static_cast<unsigned int>(pressedButtons) | static_cast<unsigned int>(button));
+
+    if (activeInput != nullptr)
+        activeInput->end(position);
+
+    activeInput = nullptr;
+
+    for(auto input: inputs)
+    {
+        if (input->query(position, pressedButtons))
+        {
+            activeInput = input;
+            activeInput->begin(position);
+        }
+    }
+}
+
+void Viewport::mouseMove(const glm::vec3 &position)
+{
+    std::cout << "mouseMove" << std::endl;
+
+    if (activeInput == nullptr)
+    {
+        for(auto input: inputs)
+        {
+            if (input->query(position, pressedButtons))
+                activeInput = input;
+        }
+    } 
+    else 
+    {
+        activeInput->move(position);
+    }
+}
+
+void Viewport::mouseUp(MouseButton button, const glm::vec3& position)
+{
+    std::cout << "mouseUp" << std::endl;
+    pressedButtons = static_cast<MouseButton>(static_cast<unsigned int>(pressedButtons) & ~static_cast<unsigned int>(button));
+
+    if (activeInput != nullptr)
+    {
+        activeInput->end(position);
+        activeInput = nullptr;
+    }
+}

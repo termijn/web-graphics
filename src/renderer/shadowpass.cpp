@@ -73,7 +73,7 @@ void ShadowPass::render(const std::vector<const Renderable*>& renderables) const
 
         setUniforms(*renderable);
     
-        glDrawElements(GL_TRIANGLES, vertexBuffer.getMesh().indices.size() * 3, GL_UNSIGNED_SHORT, 0);
+        glDrawElements(GL_TRIANGLES, vertexBuffer.getMesh().indices().size() * 3, GL_UNSIGNED_INT, 0);
         glCheckError();
     }
 }

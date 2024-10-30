@@ -45,6 +45,11 @@ void Object::setTransform(const mat4 &toParent_)
     updateTransforms();
 }
 
+glm::mat4 Object::getTransform() const
+{
+    return toParent;
+}
+
 void Object::lookAt(const vec3 &from, const vec3 &to, const vec3 &up)
 {
     mat4 fromParent = glm::lookAt(from, to, up);
@@ -54,6 +59,11 @@ void Object::lookAt(const vec3 &from, const vec3 &to, const vec3 &up)
 Space Object::getSpace() const
 {
     return space;
+}
+
+Space Object::getParentSpace() const
+{
+    return parent->getSpace();
 }
 
 void Object::updateTransforms() const
@@ -101,6 +111,16 @@ vec3 Space::transformPos(const vec3 &position, const Space &targetSpace) const
 vec3 Space::transformDir(const vec3 &direction, const Space &targetSpace) const
 {
     return to(targetSpace) * vec4(direction, 0.0);
+}
+
+glm::vec3 Space::dir(const glm::vec3 &direction, const Space &from, const Space &to)
+{
+    return from.transformDir(direction, to);
+}
+
+glm::vec3 Space::pos(const glm::vec3 &pos, const Space &from, const Space &to)
+{
+        return from.transformDir(pos, to);
 }
 
 CameraObject::CameraObject(const Object &parent)

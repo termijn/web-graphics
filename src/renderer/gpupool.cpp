@@ -5,20 +5,21 @@ GpuPool::~GpuPool() = default;
 
 Texture &GpuPool::get(const Image *image, Texture::Interpolation interpolation)
 {
-    if (!poolTextures.contains(image))
+    if (!poolTextures.contains(image->getPixels()))
     {
-        poolTextures.emplace(image, Texture());
-        poolTextures[image].setImage(*image, interpolation);
+        poolTextures.emplace(image->getPixels(), Texture());
+        poolTextures[image->getPixels()].setImage(*image, interpolation);
     }
-    return poolTextures[image];
+    return poolTextures[image->getPixels()];
 }
 
 VertexBuffer &GpuPool::get(const Renderable *renderable)
 {
-    if (!poolVertexBuffers.contains(renderable))
+
+    if (!poolVertexBuffers.contains(&renderable->mesh.vertices()))
     {
-        poolVertexBuffers.emplace(renderable, VertexBuffer());
-        poolVertexBuffers[renderable].init();
+        poolVertexBuffers.emplace(&renderable->mesh.vertices(), VertexBuffer());
+        poolVertexBuffers[&renderable->mesh.vertices()].init();
     }
-    return poolVertexBuffers[renderable];
+    return poolVertexBuffers[&renderable->mesh.vertices()];
 }

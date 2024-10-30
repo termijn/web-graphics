@@ -6,9 +6,52 @@
 
 using namespace glm;
 
+
+Image::Image()
+    : pixels(std::make_shared<std::vector<uint8_t>>())
+{
+
+}
+
+Image::Image(size_t size)
+    : pixels(std::make_shared<std::vector<uint8_t>>(size))
+{
+
+}
+
+Image::Image(const std::vector<uint8_t>& pixels)
+    : pixels(std::make_shared<std::vector<uint8_t>>(pixels))
+{
+}
+
+Image::Image(const Image& rhs)
+    : pixels(std::make_shared<std::vector<uint8_t>>())
+{
+    copy(rhs);
+}
+
+Image::~Image() = default;
+
+Image& Image::operator=(const Image& rhs)
+{
+    copy(rhs);
+    return *this;
+}
+
 int Image::sizeInBytes() const
 {
     return width * height * bytesPerPixel;
+}
+
+void Image::copy(const Image &rhs)
+{
+    if (this == &rhs) return;
+
+    width           = rhs.width;
+    height          = rhs.height;
+    bytesPerPixel   = rhs.bytesPerPixel;
+    type            = rhs.type;
+    pixels          = rhs.pixels;
 }
 
 vec2 randomPointInAnnulus(const vec2 &center, float minDistance, float maxDistance)
@@ -105,17 +148,27 @@ std::vector<vec2> generatePoissonDiscPoints(float width, float height, float min
     return points;
 }
 
+const uint8_t *Image::getPixels() const
+{
+    return pixels->data();
+}
+
+const size_t Image::bytes() const
+{
+    return pixels->size();
+}
+
 void Image::setPixel(int x, int y, uint8_t value)
 {
     assert(bytesPerPixel == 1);
-    pixels[width * y + x] = value;
+    (*pixels)[width * y + x] = value;
 }
 
 void Image::setPixel(int x, int y, uint8_t valueR, uint8_t valueG)
 {
     assert(bytesPerPixel >= 2);
 
-    uint8_t* posR = (uint8_t*) &(pixels[(width * y + x) * bytesPerPixel]); 
+    uint8_t* posR = (uint8_t*) &((*pixels)[(width * y + x) * bytesPerPixel]); 
     uint8_t* posG = posR + 1; 
 
     *posR = valueR;
@@ -125,14 +178,14 @@ void Image::setPixel(int x, int y, uint8_t valueR, uint8_t valueG)
 void Image::setPixel(int x, int y, uint16_t value)
 {
     assert(bytesPerPixel == 2);
-    uint16_t* pos = (uint16_t*) &(pixels[width * y + x * bytesPerPixel]); 
+    uint16_t* pos = (uint16_t*) &((*pixels)[width * y + x * bytesPerPixel]); 
     *pos = value;
 }
 
 void Image::setPixel(int x, int y, uint32_t value)
 {
     assert(bytesPerPixel == 4);
-    uint32_t* pos = (uint32_t*) &(pixels[width * y + x * bytesPerPixel]); 
+    uint32_t* pos = (uint32_t*) &((*pixels)[width * y + x * bytesPerPixel]); 
     *pos = value;
 }
 
@@ -144,7 +197,7 @@ int Image::makePoissonDisc(int width_, int height_, int minDistance)
     height          = 1;
     bytesPerPixel   = 2;
     type            = Type::RG8;
-    pixels.resize(sizeInBytes(), 0);
+    pixels->resize(sizeInBytes(), 0);
 
     int xi = 0;
     for (const vec2& point : points)

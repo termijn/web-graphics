@@ -11,6 +11,7 @@
 #include "viewport.h"
 #include "animator.h"
 #include "objects/object.h"
+#include "inputs/roll.h"
 #include "io/loader.h"
 
 using namespace glm;
@@ -19,11 +20,6 @@ class App
 {
 public:
     App()
-        : cameraRotation(Animator(scheduler, [&](double time) {
-                mat4    m = lookAt(glm::vec3(0, 0.1, 20), glm::vec3(0, -6, 0), glm::vec3(0, 1, 0));
-                        m = rotate(m, radians((float)time * 40.0f), vec3(0.0f, 1.0f, 0.0f));
-                camera.setTransform(inverse(m));
-            }))
     {
         camera.setPerspective(radians(35.0f), 0.1f, 1000.0f);
 
@@ -34,13 +30,13 @@ public:
         floorRenderable.material.castsShadow = false;
         floorRenderable.material.metallic    = 0.3;
 
-        camera.lookAt(glm::vec3(0, 0.1, 20), glm::vec3(0, -6, 0), glm::vec3(0, 1, 0));
+        camera.lookAt(glm::vec3(0,0 , 20), glm::vec3(0, 0.0, 0), glm::vec3(0, 1, 0));
 
         scene = loadModelObjects("/package/models/DamagedHelmet.glb", sceneParent);
 
-        sceneParent  .setTransform(translate(scale(mat4(1.0), vec3(5.0)), vec3(0.0, -1.0, 0.0)));
-        floorObject  .setTransform(scale(translate(mat4(1.0), vec3(0, -15, 0)), vec3(500.0, 0.1, 500)));
-        lightObject  .lookAt(vec3(5, 5, 5), vec3(0, 0, 0), vec3(0, 1, 0));
+        sceneParent  .setTransform(translate(scale(mat4(1.0), vec3(6.0)), vec3(0.0, 0.0, 0.0)));
+        floorObject  .setTransform(scale(translate(mat4(1.0), vec3(0, 0, -60)), vec3(500.0, 500.0, 1.0)));
+        lightObject  .lookAt(vec3(0.5, 0.6, 1), vec3(0, 0, 0), vec3(0, 1, 0));
 
         viewport.attachCamera       (camera);
         viewport.attachRenderable   (floorRenderable);
@@ -48,8 +44,6 @@ public:
 
         for (auto& renderableObject: *scene)
             viewport.attachRenderable(renderableObject->getRenderable());
-
-        cameraRotation.start();
     }
 
     void run()
@@ -60,15 +54,15 @@ private:
 
     Scheduler  scheduler;
 
-    Object root;
+    Object          root;
     CameraObject    camera          = CameraObject(root);
     Object          sceneParent     = Object(root);
-    Object          floorObject     = Object(root);
+    Object          floorObject     = Object(camera);
     Object          lightObject     = Object(camera);
 
-    Renderable floorRenderable  = Renderable(floorObject);
-    Viewport viewport           = Viewport(scheduler);
-    Animator cameraRotation;
+    Renderable  floorRenderable = Renderable(floorObject);
+    Viewport    viewport        = Viewport(scheduler);
+    RollInput   cameraInput     = RollInput(viewport, camera);
 
     std::unique_ptr<Scene> scene;
 
@@ -83,5 +77,7 @@ int main(int argc, char** argv)
     app = std::make_unique<App>();
     app->run();
 
+
+    app = nullptr;
     return 0;
 };

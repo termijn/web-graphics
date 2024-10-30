@@ -63,7 +63,7 @@ void Texture::setImage(const Image &image, Interpolation interpolation)
                 0,
                 format,
                 type,
-                image.pixels.data());
+                image.getPixels());
     glCheckError();
 
     switch (interpolation)

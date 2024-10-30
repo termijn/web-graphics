@@ -18,8 +18,8 @@ public:
     VertexBuffer&   get(const Renderable* renderable);
 
 private:
-    std::map<const Renderable*, VertexBuffer>   poolVertexBuffers;
-    std::map<const Image*,      Texture>        poolTextures;
+    std::map<const std::vector<Vertex>*, VertexBuffer>   poolVertexBuffers;
+    std::map<const uint8_t*,    Texture>                 poolTextures;
 
     GpuPool (const GpuPool&)              = delete;
     GpuPool& operator= (const GpuPool&)   = delete;

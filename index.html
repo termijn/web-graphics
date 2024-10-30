@@ -5,6 +5,10 @@
         <meta http-equiv="X-UA-Compatible" content="chrome=1, IE=edge">
         <title>Web graphics</title>
         <style>
+            body
+            {
+                overflow: hidden ;
+            }
             .fullwindow {
                 position: absolute;
                 top: 0px;
@@ -18,10 +22,31 @@
                 background-color: transparent;
                 image-rendering: optimizeQuality;
             }
+            .overlay {
+                position: absolute;
+                top: 0px;
+                left: 0px;
+                padding: 16px;
+                border: 0;
+                width: 100%;
+                height: 100%;
+                overflow: hidden;
+                display: block;
+                background-color: transparent;
+                pointer-events: none;
+                font-size: 2em;
+                font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+                color: #BBB;
+            }
         </style>
     </head>
     <body style="background-color: #FFFFFF;">
-        <canvas class = "fullwindow" id="canvas" oncontextmenu="event.preventDefault()"/>
+        <canvas class = "fullwindow" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+
+        <div class="overlay">
+            Drag to rotate the camera
+        </div>
+
         <script type="text/javascript">
             var Module = {};
             var canvas = document.getElementById('canvas');

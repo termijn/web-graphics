@@ -12,7 +12,7 @@ using namespace glm;
 ScreenPass::ScreenPass(GpuPool& gpuPool_)
     : RenderPass("/package/shaders/screenpass-vertex.glsl", "/package/shaders/screenpass-frag.glsl", gpuPool_)
 {
-    nrPoissonSamples = poissonImage.makePoissonDisc(48, 48, 4);
+    nrPoissonSamples = poissonImage.makePoissonDisc(48, 48, 5);
 }
 
 ScreenPass::~ScreenPass()

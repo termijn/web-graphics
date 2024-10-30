@@ -3,6 +3,43 @@
 
 using namespace glm;
 
+Mesh::Mesh()
+{
+
+}
+
+Mesh::Mesh(const Mesh& rhs)
+{
+    copy(rhs);
+}
+
+Mesh &Mesh::operator=(const Mesh &rhs)
+{
+    if (&rhs == this) return *this;
+    copy(rhs);
+    return *this;
+}
+
+std::vector<Vertex> &Mesh::vertices()
+{
+    return *vertexData;
+}
+
+std::vector<glm::u32vec3> &Mesh::indices()
+{
+    return *indicesData;
+}
+
+std::vector<Vertex> &Mesh::vertices() const
+{
+    return *vertexData;
+}
+
+std::vector<glm::u32vec3> &Mesh::indices() const
+{
+    return *indicesData;
+}
+
 void Mesh::generateNormals()
 {
     // TODO: not yet implemented
@@ -13,19 +50,19 @@ void Mesh::generateBoundingBox()
     boundingBox.min = glm::vec3(90000000.0f);
     boundingBox.max = glm::vec3(-90000000.0f);
 
-    for(auto& vertex: vertices)
+    for(auto& vertex: vertices())
         boundingBox.expand(vertex.position);
 }
 
 void Mesh::generateTangentVectors()
 {
-    if (vertices.empty() || indices.empty()) return;
+    if (vertices().empty() || indices().empty()) return;
 
-    for (const auto& index : indices) 
+    for (const auto& index : indices())
     {
-        Vertex& v0 = vertices[index.x];
-        Vertex& v1 = vertices[index.y];
-        Vertex& v2 = vertices[index.z];
+        Vertex& v0 = vertices()[index.x];
+        Vertex& v1 = vertices()[index.y];
+        Vertex& v2 = vertices()[index.z];
 
         glm::vec3 pos1 = glm::vec3(v0.position);
         glm::vec3 pos2 = glm::vec3(v1.position);
@@ -65,7 +102,7 @@ void Mesh::generateTangentVectors()
     }
 
     // Normalize tangents and apply Gram-Schmidt orthogonalization
-    for (auto& vertex : vertices) 
+    for (auto& vertex : vertices()) 
     {
         glm::vec3 normal    = glm::normalize(glm::vec3(vertex.normal));
         glm::vec3 tangent   = glm::normalize(glm::vec3(vertex.tangent));
@@ -87,8 +124,8 @@ void Mesh::cube(float size)
 {
     float halfSize = size / 2.0f;
 
-    // Define the vertices of the cube, each with the appropriate normal for each face
-    vertices = {
+    // Define the vertices() of the cube, each with the appropriate normal for each face
+    vertices() = {
         // Back face (-Z)
         { vec4(-halfSize, -halfSize, -halfSize, 1.0f), vec4(0, 0, -1, 0) },
         { vec4( halfSize, -halfSize, -halfSize, 1.0f), vec4(0, 0, -1, 0) },
@@ -126,8 +163,8 @@ void Mesh::cube(float size)
         { vec4(-halfSize, halfSize,  halfSize, 1.0f), vec4(0, 1, 0, 0) },
     };
 
-    // Define the 12 triangles (6 faces) of the cube using indices
-    indices = {
+    // Define the 12 triangles (6 faces) of the cube using indices()
+    indices() = {
         u16vec3{0, 1, 2}, u16vec3{0, 2, 3},   // Back face
         u16vec3{4, 5, 6}, u16vec3{4, 6, 7},   // Front face
         u16vec3{8, 9, 10}, u16vec3{8, 10, 11}, // Left face
@@ -139,10 +176,10 @@ void Mesh::cube(float size)
 
 void Mesh::noisySphere(float radius, int rings, int sectors, float noiseAmplitude)
 {
-    vertices.clear();
-    indices.clear();
+    vertices().clear();
+    indices().clear();
 
-    // Generate vertices
+    // Generate vertices()
     for (int r = 0; r <= rings; ++r) {
         for (int s = 0; s <= sectors; ++s) {
             float phi = M_PI * r / rings; // latitude
@@ -162,26 +199,26 @@ void Mesh::noisySphere(float radius, int rings, int sectors, float noiseAmplitud
             vec4 position(x, y, z, 1.0f);
             vec4 normal = normalize(position); // Normal is the normalized position vector
 
-            vertices.push_back({ position, normal });
+            vertices().push_back({ position, normal });
         }
     }
 
-    // Generate indices
+    // Generate indices()
     for (int r = 0; r < rings; ++r) {
         for (int s = 0; s < sectors; ++s) {
             int first = (r * (sectors + 1)) + s;
             int second = first + sectors + 1;
 
-            indices.push_back({ static_cast<u16>(first), static_cast<u16>(second), static_cast<u16>(first + 1) });
-            indices.push_back({ static_cast<u16>(second), static_cast<u16>(second + 1), static_cast<u16>(first + 1) });
+            indices().push_back({ static_cast<u16>(first), static_cast<u16>(second), static_cast<u16>(first + 1) });
+            indices().push_back({ static_cast<u16>(second), static_cast<u16>(second + 1), static_cast<u16>(first + 1) });
         }
     }
 }
 
 void Mesh::knot(float radius, float tubeRadius, int segments, int sides)
 {
-    vertices.clear();
-    indices.clear();
+    vertices().clear();
+    indices().clear();
 
     for (int i = 0; i <= segments; ++i)
     {
@@ -215,7 +252,7 @@ void Mesh::knot(float radius, float tubeRadius, int segments, int sides)
             vec4 position = vec4(center + circlePos * tubeRadius, 1.0f); // thickness of the knot
             vec4 vertexNormal = vec4(normalize(circlePos), 0.0f);
 
-            vertices.push_back({position, vertexNormal});
+            vertices().push_back({position, vertexNormal});
         }
     }
 
@@ -228,8 +265,8 @@ void Mesh::knot(float radius, float tubeRadius, int segments, int sides)
             int nextJ = (j + 1) % sides;
 
             // Define triangles or quads (two triangles per quad)
-            indices.push_back(u16vec3(i * (sides + 1) + j, nextI * (sides + 1) + j, i * (sides + 1) + nextJ));
-            indices.push_back(u16vec3(nextI * (sides + 1) + j, nextI * (sides + 1) + nextJ, i * (sides + 1) + nextJ));
+            indices().push_back(u16vec3(i * (sides + 1) + j, nextI * (sides + 1) + j, i * (sides + 1) + nextJ));
+            indices().push_back(u16vec3(nextI * (sides + 1) + j, nextI * (sides + 1) + nextJ, i * (sides + 1) + nextJ));
         }
     }
 }
@@ -241,10 +278,10 @@ void Mesh::sphere(float radius, int rings, int sectors)
     const float S = 1.0f / (float)(sectors - 1);
 
     // Clear previous data
-    vertices.clear();
-    indices.clear();
+    vertices().clear();
+    indices().clear();
 
-    // Generate vertices
+    // Generate vertices()
     for (unsigned int r = 0; r < rings; r++) {
         for (unsigned int s = 0; s < sectors; s++) {
             // Calculate the azimuthal angle (longitude) phi and polar angle (latitude) theta
@@ -259,7 +296,7 @@ void Mesh::sphere(float radius, int rings, int sectors)
             Vertex vertex;
             vertex.position = vec4(x * radius, y * radius, z * radius, 1.0f);
             vertex.normal = vec4(x, y, z, 0.0f); // Normal is the same as the position for a sphere
-            vertices.push_back(vertex);
+            vertices().push_back(vertex);
         }
     }
 
@@ -269,10 +306,16 @@ void Mesh::sphere(float radius, int rings, int sectors)
             unsigned int curRow = r * sectors;
             unsigned int nextRow = (r + 1) * sectors;
 
-            indices.push_back(u16vec3(curRow + s, nextRow + s, nextRow + (s + 1)));
-            indices.push_back(u16vec3(curRow + s, nextRow + (s + 1), curRow + (s + 1)));
+            indices().push_back(u16vec3(curRow + s, nextRow + s, nextRow + (s + 1)));
+            indices().push_back(u16vec3(curRow + s, nextRow + (s + 1), curRow + (s + 1)));
         }
     }
+}
+
+void Mesh::copy(const Mesh &rhs)
+{
+    vertexData  = rhs.vertexData;
+    indicesData = rhs.indicesData;
 }
 
 glm::vec3 Box::center() const

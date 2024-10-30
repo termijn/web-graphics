@@ -6,6 +6,10 @@
 #include "viewport.h"
 #include "animator.h"
 
+#include <glm/glm.hpp>
+
+using namespace glm;
+
 void mainLoop(void* mainLoopArg)
 {
     Scheduler* scheduler = (Scheduler*) mainLoopArg;
@@ -28,6 +32,48 @@ void Scheduler::run()
 
 void Scheduler::tick()
 {
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) 
+    {
+        int mouseX = event.motion.x;
+        int mouseY = event.motion.y;
+        vec3 pos(double(mouseX), double(mouseY), 0.0);
+
+        switch (event.type) 
+        {
+            case SDL_QUIT:
+                emscripten_cancel_main_loop();
+                break;
+            case SDL_MOUSEMOTION:
+                {
+                    for(auto viewport: viewports)
+                        viewport->mouseMove(pos);
+                }
+                break;
+             case SDL_MOUSEBUTTONDOWN:
+                {
+                    MouseButton button = MouseButton::Left;
+                    if (event.button.button == SDL_BUTTON_RIGHT)
+                        button = MouseButton::Right;
+                    else if (event.button.button == SDL_BUTTON_MIDDLE)
+                        button = MouseButton::Middle;
+
+                    for (auto viewport: viewports)
+                        viewport->mouseDown(button, pos);
+                }
+                break;
+            case SDL_MOUSEBUTTONUP:
+                MouseButton button = MouseButton::Left;
+                if (event.button.button == SDL_BUTTON_RIGHT)
+                    button = MouseButton::Right;
+                else if (event.button.button == SDL_BUTTON_MIDDLE)
+                    button = MouseButton::Middle;
+                for (auto viewport: viewports)
+                    viewport->mouseUp(button, pos);
+                break;
+        }
+    }
+
     for (Animator* animator: animators)
         animator->animate();
 

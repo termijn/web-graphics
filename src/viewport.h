@@ -1,9 +1,12 @@
 #pragma once
 
+#include <map>
+
 #include <SDL.h>
 #include <SDL_opengles2.h>
 
 #include <chrono>
+#include <glm/glm.hpp>
 
 #include "scheduler.h"
 
@@ -13,11 +16,16 @@
 #include "renderer/screenpass.h"
 #include "renderer/shadowpass.h"
 
+#include "input.h"
+
 class Renderable;
 
 class Viewport
 {
 public:
+    friend class Scheduler;
+    friend class Input;
+
     Viewport(Scheduler& scheduler);
     ~Viewport();
 
@@ -27,18 +35,27 @@ public:
 
     void render();
 
+protected:
+    void mouseDown  (MouseButton button, const glm::vec3& position);
+    void mouseMove  (const glm::vec3& position);
+    void mouseUp    (MouseButton button, const glm::vec3& position);
+
 private:
     Scheduler&              scheduler;
     SDL_Window*             window  = nullptr;
     const CameraObject*     camera  = nullptr;
     const Object*           light   = nullptr;
 
-    GpuPool    gpuPool;
+    GpuPool     gpuPool;
     
-    ScreenPass          screenPass  = ScreenPass(gpuPool);
-    ShadowPass          shadowPass  = ShadowPass(gpuPool);
+    ScreenPass  screenPass  = ScreenPass(gpuPool);
+    ShadowPass  shadowPass  = ShadowPass(gpuPool);
 
-    std::vector<const Renderable*> renderables;
+    MouseButton pressedButtons = MouseButton::None;
+
+    std::vector<const Renderable*>  renderables;
+    std::vector<Input*>       inputs;
+    Input* activeInput = nullptr;
 
     Viewport (const Viewport&)              = delete;
     Viewport& operator= (const Viewport&)   = delete;

@@ -54,7 +54,7 @@ void RenderPass::render(const std::vector<const Renderable *> &renderables) cons
 
         setUniforms(*renderable);
     
-        glDrawElements(GL_TRIANGLES, vertexBuffer.getMesh().indices.size() * 3, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, vertexBuffer.getMesh().indices().size() * 3, GL_UNSIGNED_INT, 0);
         glCheckError();
     }
 }

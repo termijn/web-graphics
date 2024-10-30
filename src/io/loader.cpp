@@ -28,6 +28,17 @@
 
 using namespace glm;
 
+std::map<int, Image>    imageCache;
+std::map<int, Mesh>     meshCache;
+
+Image getImage(int i, std::function<Image(void)> creator)
+{
+    if (imageCache.find(i) == imageCache.end())
+        imageCache.emplace(std::make_pair(i, creator()));
+
+    return imageCache[i];
+}
+
 glm::mat4 make_mat4(const double* matrixArray) {
     return glm::mat4(
         (float)matrixArray[0], (float)matrixArray[1], (float)matrixArray[2], (float)matrixArray[3],
@@ -126,7 +137,7 @@ void fillVertices(const tinygltf::Model& model, tinygltf::Primitive& primitive, 
     size_t vertexCount              = accessor.count;
     size_t positionStride           = accessor.ByteStride(bufferView);
 
-    mesh.vertices.reserve(vertexCount);
+    mesh.vertices().reserve(vertexCount);
     for (size_t i = 0; i < vertexCount; ++i) 
     {
         // Vertex position
@@ -154,7 +165,7 @@ void fillVertices(const tinygltf::Model& model, tinygltf::Primitive& primitive, 
             vertexTexCoord = glm::vec2(texCoord[0], texCoord[1]);
         }
 
-        mesh.vertices.emplace_back(Vertex{ vec4(transformedPosition), vec4(vertexNormal, 0.0f), vertexTexCoord });
+        mesh.vertices().emplace_back(Vertex{ vec4(transformedPosition), vec4(vertexNormal, 0.0f), vertexTexCoord });
 
         min = glm::min(min, transformedPosition);
         max = glm::max(max, transformedPosition);
@@ -176,7 +187,7 @@ void fillIndices(const tinygltf::Model& model, tinygltf::Primitive& primitive, M
         size_t componentSize = tinygltf::GetComponentSizeInBytes(indexAccessor.componentType);
         size_t triangleStride = bufferView.byteStride == 0 ? sizeof(glm::u32vec3) : bufferView.byteStride;
 
-        mesh.indices.reserve(indexCount / 3);
+        mesh.indices().reserve(indexCount / 3);
         for (size_t i = 0; i < indexCount; i += 3) 
         {
             int index0, index1, index2;
@@ -194,7 +205,7 @@ void fillIndices(const tinygltf::Model& model, tinygltf::Primitive& primitive, M
                 index2 = *reinterpret_cast<const uint32_t*>(dataPtr + 2 * componentSize);
             }
 
-            mesh.indices.emplace_back(vertexOffset + index0, vertexOffset + index1, vertexOffset + index2);
+            mesh.indices().emplace_back(vertexOffset + index0, vertexOffset + index1, vertexOffset + index2);
             dataPtr += componentSize * 3;
         }
     } 
@@ -289,16 +300,16 @@ TextureTransforms getTextureTransforms(const tinygltf::TextureInfo& textureInfo)
     return result;
 }
 
-void convertTo8bits(Image& image)
+Image convertTo8bits(Image& image)
 {
-    std::vector<uint8_t> newPixels(image.pixels.size() / 2);
+    std::vector<uint8_t> newPixels(image.bytes() / 2);
 
     int nrBytes = newPixels.size();
     for (int i = 0; i < nrBytes; i++)
-    {
-        newPixels[i] = (image.pixels[i * 2]);
-    }
-    image.pixels = std::move(newPixels);
+        newPixels[i] = image.getPixels()[i * 2];
+
+    Image result(newPixels);
+    return result;
 }
 
 template <typename T>
@@ -307,61 +318,63 @@ Image getImage(const T& textureInfo, const tinygltf::Model& model)
     Image img;
     if (textureInfo.index >= 0)
     {
-        const tinygltf::Texture& texture    = model.textures[textureInfo.index];
-        const tinygltf::Image& image        = model.images[texture.source];
-
-        img.width           = image.width;
-        img.height          = image.height;
-        img.pixels          = image.image;
-        img.bytesPerPixel   = image.component * (image.bits / 8);
-
-        std::cout << "component: " << image.component << std::endl;
-        std::cout << "bits: " << image.bits << std::endl;
-
-        if (image.pixel_type == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE && image.component == 4)
+        img = getImage(textureInfo.index, [&]
         {
-            img.bytesPerPixel   = 4;
-            img.type            = Image::Type::RGBA;
-            std::cout << "TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE" << std::endl;
-        }
+            
+            const tinygltf::Texture& texture    = model.textures[textureInfo.index];
+            const tinygltf::Image& image        = model.images[texture.source];
 
-        if (image.pixel_type == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT && image.component == 4)
-        {
-            convertTo8bits(img);
-            img.bytesPerPixel   = 4;
-            img.type            = Image::Type::RGBA;
-            std::cout << "first pixel:  " << int(img.pixels[0]) << "," << int(img.pixels[1])  << "," << int(img.pixels[2])  << "," << int(img.pixels[3])  << std::endl;
+            Image newImage(image.image);
+            newImage.width           = image.width;
+            newImage.height          = image.height;
+            newImage.bytesPerPixel   = image.component * (image.bits / 8);
 
+            std::cout << "component: " << image.component << std::endl;
+            std::cout << "bits: " << image.bits << std::endl;
 
-            std::cout << "TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT" << std::endl;
-        }
+            if (image.pixel_type == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE && image.component == 4)
+            {
+                newImage.bytesPerPixel   = 4;
+                newImage.type            = Image::Type::RGBA;
+                std::cout << "TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE" << std::endl;
+            }
 
-        if (image.pixel_type == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE && image.component == 2)
-        {
-            img.type = Image::Type::RG8;
-            std::cout << "TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE" << std::endl;
-        }
+            if (image.pixel_type == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT && image.component == 4)
+            {
+                newImage = convertTo8bits(newImage);
+                newImage.bytesPerPixel   = 4;
+                newImage.type            = Image::Type::RGBA;
+                std::cout << "TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT" << std::endl;
+            }
 
-        if (image.pixel_type == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE && image.component == 1)
-        {
-            img.type = Image::Type::R8;
-            std::cout << "TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE" << std::endl;
-        }
+            if (image.pixel_type == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE && image.component == 2)
+            {
+                newImage.type = Image::Type::RG8;
+                std::cout << "TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE" << std::endl;
+            }
 
-        if (image.pixel_type == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE && image.component == 3)
-        {
-            img.type = Image::Type::RGB;
-            std::cout << "TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE" << std::endl;
-        }
+            if (image.pixel_type == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE && image.component == 1)
+            {
+                newImage.type = Image::Type::R8;
+                std::cout << "TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE" << std::endl;
+            }
 
-        if (image.pixel_type == TINYGLTF_COMPONENT_TYPE_FLOAT)
-            std::cout << "TINYGLTF_COMPONENT_TYPE_FLOAT" << std::endl;
-        if (image.pixel_type == TINYGLTF_COMPONENT_TYPE_DOUBLE)
-            std::cout << "TINYGLTF_COMPONENT_TYPE_DOUBLE" << std::endl;
+            if (image.pixel_type == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE && image.component == 3)
+            {
+                newImage.type = Image::Type::RGB;
+                std::cout << "TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE" << std::endl;
+            }
 
-        std::cout << "image width "     << img.width << std::endl;
-        std::cout << "image height "    << img.height << std::endl;
-        std::cout << "image bpp "       << img.bytesPerPixel << std::endl;
+            if (image.pixel_type == TINYGLTF_COMPONENT_TYPE_FLOAT)
+                std::cout << "TINYGLTF_COMPONENT_TYPE_FLOAT" << std::endl;
+            if (image.pixel_type == TINYGLTF_COMPONENT_TYPE_DOUBLE)
+                std::cout << "TINYGLTF_COMPONENT_TYPE_DOUBLE" << std::endl;
+
+            std::cout << "image width "     << newImage.width << std::endl;
+            std::cout << "image height "    << newImage.height << std::endl;
+            std::cout << "image bpp "       << newImage.bytesPerPixel << std::endl;
+            return newImage;
+        });
     }
 
     return img;
@@ -437,7 +450,7 @@ void traverseNodes(tinygltf::Model& model, const tinygltf::Node& node, Mesh& mes
 
         for (auto& primitive: nodeMesh.primitives)
         {
-            int offset = mesh.vertices.size();
+            int offset = mesh.vertices().size();
             fillVertices(model, primitive, mesh, nodeTransform);
             fillIndices(model, primitive, mesh, offset);
 
@@ -461,12 +474,25 @@ void traverseNodes(tinygltf::Model& model, const tinygltf::Node& node, Scene& sc
     {
         tinygltf::Mesh& nodeMesh    = model.meshes[node.mesh];
 
+        if (meshCache.contains(node.mesh))
+        {            
+            item->getRenderable().mesh = meshCache[node.mesh];
+        } 
+        else 
+        {
+            for (auto& primitive: nodeMesh.primitives)
+            {
+                Mesh& mesh = item->getRenderable().mesh;
+                fillVertices (model, primitive, mesh, mat4(1.0));
+                fillIndices  (model, primitive, mesh, 0);
+                mesh.generateTangentVectors();
+                meshCache[node.mesh] = mesh;
+            }
+        }
+
+        Mesh& mesh = item->getRenderable().mesh;
         for (auto& primitive: nodeMesh.primitives)
         {
-            Mesh& mesh = item->getRenderable().mesh;
-            fillVertices (model, primitive, mesh, mat4(1.0));
-            fillIndices  (model, primitive, mesh, 0);
-
             if (primitive.material >= 0)
             {
                 Material& material = item->getRenderable().material;
@@ -475,11 +501,10 @@ void traverseNodes(tinygltf::Model& model, const tinygltf::Node& node, Scene& sc
                 {
                     std::cout << "overriding uvset " << std::endl;
                     int i = 0;
-                    for (Vertex& vertex: mesh.vertices)
+                    for (Vertex& vertex: mesh.vertices())
                         vertex.uv = material.uvSet.value()[i++];
                 }
             }
-            mesh.generateTangentVectors();
         }
     }
     Object& object = item->getObject();
@@ -506,6 +531,7 @@ std::optional<tinygltf::Model> loadGlTFModel(const std::string& filePath)
 
 Mesh loadModel(const std::string& filePath)
 {
+    imageCache.clear();
     std::optional<tinygltf::Model>  loadResult = loadGlTFModel(filePath);
 
     if (!loadResult.has_value()) return Mesh();
@@ -530,6 +556,7 @@ Mesh loadModel(const std::string& filePath)
 
 std::unique_ptr<Scene> loadModelObjects(const std::string &filePath, Object &parent)
 {
+    imageCache.clear();
     auto result = std::make_unique<Scene>();
 
     std::optional<tinygltf::Model>  loadResult = loadGlTFModel(filePath);

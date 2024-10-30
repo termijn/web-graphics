@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <memory>
 #include <glm/glm.hpp>
 
 class Box
@@ -25,13 +26,19 @@ public:
 
 };
 
-// TODO: Add shallow copying to facilitate instanced meshes.
 class Mesh
 {
 public:
+    Mesh();
+    Mesh(const Mesh& rhs);
 
-    std::vector<Vertex>         vertices;
-    std::vector<glm::u32vec3>   indices;
+    Mesh& operator=(const Mesh& rhs);
+
+    std::vector<Vertex>&         vertices();
+    std::vector<glm::u32vec3>&   indices();
+
+    std::vector<Vertex>&         vertices() const;
+    std::vector<glm::u32vec3>&   indices() const;
 
     Box boundingBox;
 
@@ -43,5 +50,11 @@ public:
     void noisySphere(float radius, int rings, int sectors, float noiseAmplitude);
     void knot       (float radius, float tubeRadius, int segments, int sides);
     void sphere(float radius, int rings, int sectors);
-    
+
+private:
+    std::shared_ptr<std::vector<Vertex>>        vertexData  = std::make_shared<std::vector<Vertex>>();
+    std::shared_ptr<std::vector<glm::u32vec3>>  indicesData = std::make_shared<std::vector<glm::u32vec3>>();
+
+    void copy(const Mesh& rhs);
+
 };
