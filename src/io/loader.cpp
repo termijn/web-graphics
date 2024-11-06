@@ -90,91 +90,80 @@ glm::mat4 getNodeTransformation(const tinygltf::Node& node)
     return transform;
 }
 
+struct AttributeData
+{
+    const unsigned char* dataPtr    = nullptr;
+    size_t               itemCount  = 0;
+    int                  stride     = 0;
+
+    template <typename T>
+    T get(int index) const
+    {
+        int strideBytes = stride == -1 ? sizeof(T) : stride;
+        const T* value = reinterpret_cast<const T*>(dataPtr + index * strideBytes);
+        return *value;
+    }
+};
+
+std::optional<AttributeData> read(const tinygltf::Model& model, tinygltf::Primitive& primitive, const std::string& attribute)
+{
+    std::optional<AttributeData> result = std::nullopt;
+
+    if (primitive.attributes.find(attribute) != primitive.attributes.end()) 
+    {
+        int accessorIndex = primitive.attributes.at(attribute);
+
+        const tinygltf::Accessor*   accessor   = &model.accessors[accessorIndex];
+        const tinygltf::BufferView* bufferView = &model.bufferViews[accessor->bufferView];
+        const tinygltf::Buffer*     buffer     = &model.buffers[bufferView->buffer];
+
+        result = AttributeData {
+            &buffer->data[bufferView->byteOffset + accessor->byteOffset],
+            accessor->count,
+            accessor->ByteStride(*bufferView)
+        };
+    }
+    return result;
+}
 
 void fillVertices(const tinygltf::Model& model, tinygltf::Primitive& primitive, Mesh& mesh, glm::mat4 nodeTransform)
 {
-    vec4 max = vec4(-100000);
-    vec4 min = vec4(100000);
-    
-    const tinygltf::Accessor* normalAccessor        = nullptr;
-    const tinygltf::BufferView* normalBufferView    = nullptr;
-    const tinygltf::Buffer* normalBuffer            = nullptr;
-    const unsigned char* normalData                 = nullptr;
-    size_t normalStride = 0;
-    
-    if (primitive.attributes.find("NORMAL") != primitive.attributes.end()) 
+    vec4 max = vec4(std::numeric_limits<float>::min());
+    vec4 min = vec4(std::numeric_limits<float>::max());
+
+    auto normalData        = read(model, primitive, "NORMAL");
+    auto texCoordsData     = read(model, primitive, "TEXCOORD_0");
+    auto positionData      = read(model, primitive, "POSITION");
+
+    mesh.vertices().reserve(positionData->itemCount);
+    for (size_t i = 0; i < positionData->itemCount; ++i) 
     {
-        int normalAccessorIndex = primitive.attributes.at("NORMAL");
-        normalAccessor          = &model.accessors[normalAccessorIndex];
-        normalBufferView        = &model.bufferViews[normalAccessor->bufferView];
-        normalBuffer            = &model.buffers[normalBufferView->buffer];
-        normalData              = &normalBuffer->data[normalBufferView->byteOffset + normalAccessor->byteOffset];
-        normalStride            = normalAccessor->ByteStride(*normalBufferView);
-        if (normalStride == -1) normalStride = sizeof(vec3); // Default to vec3 size
-    }
-
-    const tinygltf::Accessor* texCoordAccessor        = nullptr;
-    const tinygltf::BufferView* texCoordBufferView    = nullptr;
-    const tinygltf::Buffer* texCoordBuffer            = nullptr;
-    const unsigned char* texCoordData                 = nullptr;
-    size_t texCoordStride = 0;
-
-     if (primitive.attributes.find("TEXCOORD_0") != primitive.attributes.end()) {
-        int texCoordAccessorIndex   = primitive.attributes.at("TEXCOORD_0");
-        texCoordAccessor            = &model.accessors[texCoordAccessorIndex];
-        texCoordBufferView          = &model.bufferViews[texCoordAccessor->bufferView];
-        texCoordBuffer              = &model.buffers[texCoordBufferView->buffer];
-        texCoordData                = &texCoordBuffer->data[texCoordBufferView->byteOffset + texCoordAccessor->byteOffset];
-        texCoordStride              = texCoordAccessor->ByteStride(*texCoordBufferView);
-        if (texCoordStride == 0) texCoordStride = sizeof(vec2); // Default to vec3 size
-    }
-
-    const tinygltf::Accessor& accessor      = model.accessors[primitive.attributes.at("POSITION")];
-    const tinygltf::BufferView& bufferView  = model.bufferViews[accessor.bufferView];
-    const tinygltf::Buffer& buffer          = model.buffers[bufferView.buffer];
-    
-    const unsigned char* dataPtr    = &buffer.data[bufferView.byteOffset + accessor.byteOffset];
-    size_t vertexCount              = accessor.count;
-    size_t positionStride           = accessor.ByteStride(bufferView);
-
-    mesh.vertices().reserve(vertexCount);
-    for (size_t i = 0; i < vertexCount; ++i) 
-    {
-        // Vertex position
-        const float* position = reinterpret_cast<const float*>(dataPtr + i * positionStride);
-        glm::vec3 vertexPosition(position[0], position[1], position[2]);
-
-        // Apply node transformation to vertex position
-        glm::vec4 transformedPosition = nodeTransform * glm::vec4(vertexPosition, 1.0f);
+        glm::vec3 vertexPosition        = positionData->get<vec3>(i);
+        glm::vec4 transformedPosition   = nodeTransform * glm::vec4(vertexPosition, 1.0f);
 
         glm::vec3 vertexNormal(0.0f);
-        if (normalAccessor) 
+        if (normalData) 
         {
-            const float* normal = reinterpret_cast<const float*>(normalData + i * normalStride);
-            vertexNormal = glm::vec3(normal[0], normal[1], normal[2]);
-
-            // Apply node transformation to normals (ignoring translation)
+            vertexNormal = normalData->get<vec3>(i);
             glm::vec4 transformedNormal = transpose(inverse(nodeTransform)) * glm::vec4(vertexNormal, 0.0f);
             vertexNormal = glm::normalize(glm::vec3(transformedNormal));
         }
 
         glm::vec2 vertexTexCoord(0.0f);
-        if (texCoordAccessor)
-        {
-            const float* texCoord = reinterpret_cast<const float*>(texCoordData + i * texCoordStride);
-            vertexTexCoord = glm::vec2(texCoord[0], texCoord[1]);
-        }
+        if (texCoordsData)
+            vertexTexCoord = texCoordsData->get<vec2>(i);
 
-        mesh.vertices().emplace_back(Vertex{ vec4(transformedPosition), vec4(vertexNormal, 0.0f), vertexTexCoord });
+        mesh.vertices().emplace_back(vec4(transformedPosition), vec4(vertexNormal, 0.0f), vertexTexCoord);
 
         min = glm::min(min, transformedPosition);
         max = glm::max(max, transformedPosition);
     }
+    mesh.boundingBox = Box { min, max };
 
     std::cout << "min=" << min.x << "," << min.y << "," << min.z << " max=" << max.x << "," << max.y << "," << max.z << std::endl;
 }
 
-void fillIndices(const tinygltf::Model& model, tinygltf::Primitive& primitive, Mesh& mesh, int vertexOffset)
+void fillIndices(const tinygltf::Model& model, tinygltf::Primitive& primitive, Mesh& mesh, uint vertexOffset)
 {
     if (primitive.indices >= 0) 
     {
@@ -182,31 +171,40 @@ void fillIndices(const tinygltf::Model& model, tinygltf::Primitive& primitive, M
         const tinygltf::BufferView& bufferView      = model.bufferViews[indexAccessor.bufferView];
         const tinygltf::Buffer&     buffer          = model.buffers[bufferView.buffer];
 
-        const uint8_t* dataPtr = &buffer.data[bufferView.byteOffset + indexAccessor.byteOffset];
-        size_t indexCount = indexAccessor.count;
-        size_t componentSize = tinygltf::GetComponentSizeInBytes(indexAccessor.componentType);
-        size_t triangleStride = bufferView.byteStride == 0 ? sizeof(glm::u32vec3) : bufferView.byteStride;
+        const uint8_t* dataPtr  = &buffer.data[bufferView.byteOffset + indexAccessor.byteOffset];
+        size_t indexCount       = indexAccessor.count;
+        size_t indexStride      = indexAccessor.ByteStride(bufferView);
 
         mesh.indices().reserve(indexCount / 3);
         for (size_t i = 0; i < indexCount; i += 3) 
         {
-            int index0, index1, index2;
+            u32vec3 triangle;
 
             if (indexAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) 
             {
-                index0 = *reinterpret_cast<const uint16_t*>(dataPtr);
-                index1 = *reinterpret_cast<const uint16_t*>(dataPtr + componentSize);
-                index2 = *reinterpret_cast<const uint16_t*>(dataPtr + 2 * componentSize);
+                std::cout << "Indices as TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT" << std::endl;
+                if (indexStride == -1) 
+                    indexStride = sizeof(glm::uint16);
+
+                triangle.x = glm::uint32(*reinterpret_cast<const glm::uint16*>(dataPtr));
+                triangle.y = glm::uint32(*reinterpret_cast<const glm::uint16*>(dataPtr + indexStride));
+                triangle.z = glm::uint32(*reinterpret_cast<const glm::uint16*>(dataPtr + indexStride * 2));
+
             } 
             else if (indexAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT) 
             {
-                index0 = *reinterpret_cast<const uint32_t*>(dataPtr);
-                index1 = *reinterpret_cast<const uint32_t*>(dataPtr + componentSize);
-                index2 = *reinterpret_cast<const uint32_t*>(dataPtr + 2 * componentSize);
+                std::cout << "Indices as TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT" << std::endl;
+
+                if (indexStride == -1) 
+                    indexStride = sizeof(glm::uint32);
+
+                triangle.x = *reinterpret_cast<const glm::uint32*>(dataPtr);
+                triangle.y = *reinterpret_cast<const glm::uint32*>(dataPtr + indexStride);
+                triangle.z = *reinterpret_cast<const glm::uint32*>(dataPtr + indexStride * 2);
             }
 
-            mesh.indices().emplace_back(vertexOffset + index0, vertexOffset + index1, vertexOffset + index2);
-            dataPtr += componentSize * 3;
+            mesh.indices().emplace_back(triangle + u32vec3(vertexOffset));
+            dataPtr += indexStride * 3;
         }
     } 
     else 
@@ -467,8 +465,9 @@ void traverseNodes(tinygltf::Model& model, const tinygltf::Node& node, Scene& sc
     std::cout << "Node: " << node.name << std::endl;
 
     mat4 transform                          = getNodeTransformation(node);
-    std::unique_ptr<RenderableObject>& item = scene.emplace_back(std::make_unique<RenderableObject>(parent));
-    item->getObject().setTransform(getNodeTransformation(node));
+    RenderableObject& item = scene.newObject(parent);
+    
+    item.getObject().setTransform(getNodeTransformation(node));
 
     if (node.mesh >= 0)
     {
@@ -476,13 +475,13 @@ void traverseNodes(tinygltf::Model& model, const tinygltf::Node& node, Scene& sc
 
         if (meshCache.contains(node.mesh))
         {            
-            item->getRenderable().mesh = meshCache[node.mesh];
+            item.getRenderable().mesh = meshCache[node.mesh];
         } 
         else 
         {
             for (auto& primitive: nodeMesh.primitives)
             {
-                Mesh& mesh = item->getRenderable().mesh;
+                Mesh& mesh = item.getRenderable().mesh;
                 fillVertices (model, primitive, mesh, mat4(1.0));
                 fillIndices  (model, primitive, mesh, 0);
                 mesh.generateTangentVectors();
@@ -490,12 +489,12 @@ void traverseNodes(tinygltf::Model& model, const tinygltf::Node& node, Scene& sc
             }
         }
 
-        Mesh& mesh = item->getRenderable().mesh;
+        Mesh& mesh = item.getRenderable().mesh;
         for (auto& primitive: nodeMesh.primitives)
         {
             if (primitive.material >= 0)
             {
-                Material& material = item->getRenderable().material;
+                Material& material = item.getRenderable().material;
                 fillMaterial(model, primitive.material, material);
                 if (material.uvSet.has_value())
                 {
@@ -507,7 +506,7 @@ void traverseNodes(tinygltf::Model& model, const tinygltf::Node& node, Scene& sc
             }
         }
     }
-    Object& object = item->getObject();
+    Object& object = item.getObject();
     for (const auto& childIndex : node.children)
         traverseNodes(model, model.nodes[childIndex], scene, object, nodeTransform);
 }
@@ -576,6 +575,24 @@ std::unique_ptr<Scene> loadModelObjects(const std::string &filePath, Object &par
     }
 
     return result;
+}
+
+Image loadImage(const std::string &filePath)
+{
+    std::cout << "loadImage() - " << filePath << std::endl;
+    int x, y, n = 0;
+    unsigned char *data = stbi_load(filePath.c_str(), &x, &y, &n, 0);
+
+    Image image;
+    image.bytesPerPixel = n;
+    image.width         = x;
+    image.height        = y;
+
+    image.pixels->assign(data, data + x * y * n);
+
+    image.type = n == 4 ? Image::Type::RGBA : Image::Type::RGB;
+    stbi_image_free(data);
+    return image;
 }
 
 RenderableObject::RenderableObject(const Object& parent)

@@ -16,16 +16,16 @@ See the renderer in action at [Github Pages](https://termijn.github.io/index.htm
 - Emmisive maps
 - Metallic / Roughness maps
 - Occlusion map
+- Environment mapping
 - gltf loading support
 - gltf binary scene loading
 
 ## Planned features
-- Mesh instancing
-- Texture resource sharing
-- Environment mapping
-- Multiple lights and Light intensity / color
 - HDR and tonemapping
+- Mesh instancing
+- Multiple lights and Light intensity / color
 - Picking
+- Integrate physics engine
 - BVH tree
 - AABB intersection testing
 

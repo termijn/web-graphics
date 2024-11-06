@@ -25,6 +25,7 @@ void ShadowPass::init()
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, 0);
 
+
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -80,7 +81,7 @@ void ShadowPass::render(const std::vector<const Renderable*>& renderables) const
 
 mat4 ShadowPass::getProjection() const
 {
-    return perspective<float>(radians(140.0f),1.0f, 1.0f, 5000.0f);
+    return perspective<float>(radians(100.0f),1.0f, 1.0f, 1400.0f);
 }
 
 GLint ShadowPass::getDepthTexture()

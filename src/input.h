@@ -26,6 +26,14 @@ public:
     virtual void move   (const glm::vec3& position);
     virtual void end    (const glm::vec3& position);
 
+    virtual void animate(double t);
+    virtual bool animate();
+
+    void startAnimate(double duration);
+    void startAnimate();
+
+    void animateTick(double seconds);
+
     glm::vec3 delta() const;
     glm::vec3 deltaRelative() const;
 
@@ -34,5 +42,9 @@ private:
     glm::vec3 beginPos;
     glm::vec3 lastPos;
     glm::vec3 lastDelta;
+
+    double animationStartTime;
+    double animationDuration;
+    double time;
 
 };

@@ -23,3 +23,15 @@ VertexBuffer &GpuPool::get(const Renderable *renderable)
     }
     return poolVertexBuffers[&renderable->mesh.vertices()];
 }
+
+CubemapTexture &GpuPool::get(const Cubemap *cubemap)
+{
+    if (!poolCubemaps.contains(cubemap))
+    {
+        poolCubemaps.emplace(std::piecewise_construct,
+                          std::forward_as_tuple(cubemap),
+                          std::tuple<>());
+        poolCubemaps[cubemap].setCubemap(*cubemap);
+    }
+    return poolCubemaps[cubemap];
+}

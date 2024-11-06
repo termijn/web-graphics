@@ -3,6 +3,7 @@
 #include <optional>
 #include <glm/glm.hpp>
 #include "image.h"
+#include "cubemap.h"
 
 struct TextureTransforms
 {
@@ -28,6 +29,8 @@ public:
     std::optional<Image>    emissive;
     std::optional<Image>    normalMap;
     std::optional<Image>    occlusion;
+
+    std::optional<Cubemap*>  reflectionMap;
     
     std::optional<std::vector<glm::vec2>>   uvSet;
     std::optional<std::vector<glm::vec2>>   uvSetNormalMap;

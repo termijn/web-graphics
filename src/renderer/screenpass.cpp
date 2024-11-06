@@ -56,6 +56,9 @@ void ScreenPass::init()
 
     locationHasEmmissiveTexture = glGetUniformLocation(program, "emissive.hasEmissiveTexture");
     locationEmissiveTexture     = glGetUniformLocation(program, "emissive.emissiveTexture");
+
+    locationHasReflectionMap  = glGetUniformLocation(program, "reflectionMap.hasReflectionMap");
+    locationReflectionMap     = glGetUniformLocation(program, "reflectionMap.texture");
 }
 
 void ScreenPass::renderPre(const glm::mat4 &view, const glm::mat4 &projection)
@@ -85,7 +88,8 @@ void ScreenPass::setUniforms(const Renderable &renderable) const
     
     glUniformMatrix4fv(locationViewUniform, 1, GL_FALSE, value_ptr(view));
 
-    glUniform3f(locationLightColor, 1.0f, 1.0f, 1.0f);
+    vec3 lightColor(0.8f);
+    glUniform3fv(locationLightColor, 1, value_ptr(lightColor));
 
     glUniform3fv(locationBaseColor, 1, value_ptr(material.albedo));
 
@@ -166,4 +170,13 @@ void ScreenPass::setUniforms(const Renderable &renderable) const
         texture.bind(GL_TEXTURE6);
     }
     glUniform1i(locationHasEmmissiveTexture, material.emissive.has_value() ? 1 : 0);
+
+
+    if (material.reflectionMap.has_value())
+    {
+        CubemapTexture& texture = gpuPool.get(material.reflectionMap.value());
+        glUniform1i(locationReflectionMap, 7);
+        texture.bind(GL_TEXTURE7);
+    }
+    glUniform1i(locationHasReflectionMap, material.reflectionMap.has_value() ? 1 : 0);
 }

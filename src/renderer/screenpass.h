@@ -54,6 +54,9 @@ protected:
     GLint locationHasEmmissiveTexture;
     GLint locationEmissiveTexture;
 
+    GLint locationHasReflectionMap;
+    GLint locationReflectionMap;
+
     GLint locationTexOffset;
     GLint locationTexScale;
     GLint locationTexRotation;

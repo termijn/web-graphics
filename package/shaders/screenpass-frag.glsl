@@ -35,16 +35,22 @@ struct Emissive
     sampler2D   emissiveTexture;
 };
 
-uniform Emissive emissive;
-
-uniform NormalMap normalMap;
+struct ReflectionMap
+{
+    bool        hasReflectionMap;
+    samplerCube texture;
+};
 
 struct Occlusion
 {
     bool        hasOcclusionMap;
     sampler2D   occlusionMap;
 };
-uniform Occlusion occlusion;
+
+uniform Emissive        emissive;
+uniform NormalMap       normalMap;
+uniform ReflectionMap   reflectionMap;
+uniform Occlusion       occlusion;
 
 in vec3 Normal;             // Normal of the fragment
 in vec3 fragPositionWorld;  // Fragment position in world space
@@ -56,8 +62,8 @@ in vec3 fragBitangent;
 out vec4 FragColor;
 
 // Constant normal incidence Fresnel factor for all dielectrics.
-// 1% reflectance for dielectrics
-const vec3 Fdielectric = vec3(0.1f);
+// 4% reflectance for dielectrics
+const vec3 Fdielectric = vec3(0.4f);
 
 const float M_PI = 3.1415926535897932384f;
 const float Epsilon = 0.00001f;
@@ -96,6 +102,17 @@ vec3 fresnelSchlick(vec3 F0, float cosTheta)
     return F0 + (vec3(1.0f) - F0) * pow(1.0f - cosTheta, 5.0f);
 }
 
+float linearizeDepth(float depth, float near, float far) {
+    return (2.0 * near) / (far + near - depth * (far - near));
+}
+
+vec4 sampleTextureWithBorder(sampler2D tex, vec2 uv, vec4 borderColor) 
+{
+    if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0)
+        return borderColor;
+    return texture(tex, uv);
+}
+
 // Percentage-Closer Filtering (PCF)
 float pcf(vec3 shadowCoord, int dimensions) 
 {
@@ -109,9 +126,12 @@ float pcf(vec3 shadowCoord, int dimensions)
 
         vec2 offset = offsetInPixels * texelSize;
 
-        float shadowMapDepth = texture(depthTexture, shadowCoord.xy + offset).r;
+        vec4 depthValue = sampleTextureWithBorder(depthTexture, shadowCoord.xy + offset, vec4(1.0));
 
-        shadow += shadowCoord.z > shadowMapDepth ? 1.0 : 0.0;
+        float shadowMapDepth    = depthValue.r;
+        float fragDepth         = shadowCoord.z;
+
+        shadow += fragDepth > shadowMapDepth ? 1.0 : 0.0;
         sampleCount++;
     }
     return shadow / float(sampleCount -1);
@@ -181,16 +201,31 @@ void main()
             float D = ndfGGX(cosLh, finalRoughness);
             float G = gaSchlickGGX(cosLi, cosLo, finalRoughness);
             vec3 kd = mix(vec3(1.0f) - F, vec3(0.0f), finalMetallic);
-            vec3 diffuseBRDF = kd * albedo;
+            
+            vec3 diffuseBRDF    = kd * albedo;
+            vec3 specularBRDF   = (F * D * G) / max(Epsilon, 4.0f * cosLi * cosLo);
 
-            vec3 specularBRDF = (F * D * G) / max(Epsilon, 4.0f * cosLi * cosLo);
-
-            // Total contribution for this light.
+            // Accumulate direct lighting contributions
             directLighting += (diffuseBRDF + specularBRDF) * Lradiance * cosLi;
+
+            if (reflectionMap.hasReflectionMap)
+            {
+                // Calculate the reflection vector
+                vec3 I = normalize(fragPositionWorld - viewPositionWorld);
+                vec3 R = reflect(I, N);
+                vec3 envSpecular = pow(texture(reflectionMap.texture, R).rgb, vec3(2.2));
+
+                directLighting += (diffuseBRDF + specularBRDF) * Lradiance * cosLi  * 0.6;
+                directLighting += envSpecular * (1.0 - finalRoughness) * F          * 0.4;
+            } 
+            else 
+            {
+                directLighting += (diffuseBRDF + specularBRDF) * Lradiance * cosLi;
+            }
         }
         
         // Add some ambient light, todo: make uniform
-        float ambientStrength = 0.0;
+        float ambientStrength = -0.2;
         vec3 ambient = ambientStrength * albedo * lightColor;
 
         finalColor =  directLighting + ambient;
@@ -200,11 +235,11 @@ void main()
     }
 
     //float angleBias         = max(0.001 * (1.0 - dot(N, Li)), 0.005);
-    float normalOffset      = 0.1;
-    vec3 biasedFragPos      = fragPositionWorld + (N * normalOffset);
+    float normalOffset      = 0.05;
+    vec3 biasedFragPos      = fragPositionWorld + (normalize(Normal) * normalOffset);
     vec4 fragInLightSpace   = toLightSpace(vec4(biasedFragPos, 1.0));
     
-    float shadow = pcf(fragInLightSpace.xyz, 16) * 0.7;
+    float shadow = pcf(fragInLightSpace.xyz, 8) * 0.7;
 
     finalColor  = finalColor * (1.0 - shadow);
 

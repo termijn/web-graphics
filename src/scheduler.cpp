@@ -77,13 +77,18 @@ void Scheduler::tick()
     for (Animator* animator: animators)
         animator->animate();
 
+    auto time   = std::chrono::steady_clock::now() - startTime;
+    auto milli  = std::chrono::duration_cast<std::chrono::milliseconds>(time).count();
     for (Viewport* viewport: viewports)
+    {
+        for (Input* input: viewport->inputs)
+            input->animateTick(milli / 1000.0);
+
         viewport->render();
+    }
     
     nrFrames++;
 
-    auto time   = std::chrono::steady_clock::now() - startTime;
-    auto milli  = std::chrono::duration_cast<std::chrono::milliseconds>(time).count();
     if (milli >= 5000 )
     {
         float fps = (float) nrFrames / (milli / 1000.0);

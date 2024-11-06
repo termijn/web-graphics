@@ -40,6 +40,67 @@ void Input::end(const vec3 &position)
     lastPos = position;
 }
 
+void Input::animate(double t)
+{
+}
+
+bool Input::animate()
+{
+    return false;
+}
+
+void Input::startAnimate(double duration)
+{
+    animationDuration   = duration;
+    animationStartTime  = time;
+}
+
+void Input::startAnimate()
+{
+    animationDuration   = std::numeric_limits<double>::max();
+    animationStartTime  = time;
+}
+
+double inverseQuadratic(double t)
+{
+    return 1.0 - (1.0 - t) * (1.0 - t);
+}
+
+double linear(double t)
+{
+    return t;
+}
+
+double getSigmoid(double x, double power) noexcept
+{
+    x = (x*2.0)-1.0;
+
+    double value = (1.0 / (1.0 + std::exp(-power * x  ))) - 0.5;
+    value       /= (1.0 / (1.0 + std::exp(-power * 1.0))) - 0.5;
+
+    return (value + 1.0) / 2.0;
+}
+
+double sigmoidSlow(double x)
+{
+    return getSigmoid(x, 4.0);
+}
+
+double sigmoidFast(double x)
+{
+    return getSigmoid(x, 8.0);
+}
+
+void Input::animateTick(double seconds)
+{
+    time = seconds;
+    if (!animate() && time >= animationStartTime && time <= (animationStartTime + animationDuration))
+    {
+        double t = (time - animationStartTime) / animationDuration;
+        animate(inverseQuadratic(t));
+    }
+}
+
 vec3 Input::delta() const
 {
     return lastPos - beginPos;

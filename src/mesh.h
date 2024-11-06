@@ -7,8 +7,8 @@
 class Box
 {
 public:
-    glm::vec3 min = glm::vec3(900000000.0f);
-    glm::vec3 max = glm::vec3(-900000000.0f);
+    glm::vec3 min = glm::vec3(std::numeric_limits<float>::max());
+    glm::vec3 max = glm::vec3(std::numeric_limits<float>::min());
 
     void expand(const glm::vec3& point);
 
