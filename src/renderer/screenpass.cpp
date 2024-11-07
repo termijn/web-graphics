@@ -59,6 +59,8 @@ void ScreenPass::init()
 
     locationHasReflectionMap  = glGetUniformLocation(program, "reflectionMap.hasReflectionMap");
     locationReflectionMap     = glGetUniformLocation(program, "reflectionMap.texture");
+    locationMaxMipLevel       = glGetUniformLocation(program, "reflectionMap.maxMipLevel");
+
 }
 
 void ScreenPass::renderPre(const glm::mat4 &view, const glm::mat4 &projection)
@@ -88,7 +90,7 @@ void ScreenPass::setUniforms(const Renderable &renderable) const
     
     glUniformMatrix4fv(locationViewUniform, 1, GL_FALSE, value_ptr(view));
 
-    vec3 lightColor(0.8f);
+    vec3 lightColor(1.0f);
     glUniform3fv(locationLightColor, 1, value_ptr(lightColor));
 
     glUniform3fv(locationBaseColor, 1, value_ptr(material.albedo));
@@ -176,6 +178,9 @@ void ScreenPass::setUniforms(const Renderable &renderable) const
     {
         CubemapTexture& texture = gpuPool.get(material.reflectionMap.value());
         glUniform1i(locationReflectionMap, 7);
+        int maxLevel = texture.getMaxMipLevel();
+        std::cout << "Max level for environment map: " << maxLevel << std::endl;
+        glUniform1i(locationMaxMipLevel, maxLevel);
         texture.bind(GL_TEXTURE7);
     }
     glUniform1i(locationHasReflectionMap, material.reflectionMap.has_value() ? 1 : 0);

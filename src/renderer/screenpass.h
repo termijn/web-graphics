@@ -56,6 +56,7 @@ protected:
 
     GLint locationHasReflectionMap;
     GLint locationReflectionMap;
+    GLint locationMaxMipLevel;
 
     GLint locationTexOffset;
     GLint locationTexScale;

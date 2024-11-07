@@ -19,7 +19,7 @@ class Material
 public:
     glm::vec3   albedo      = glm::vec3(0.0, 0.5, 0.6);
     float       roughness   = 0.6;
-    float       metallic    = 0.2;
+    float       metallic    = 1.0;
 
     bool        castsShadow = true;
     bool        shaded      = true;

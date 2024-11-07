@@ -2,6 +2,10 @@
 #include "errors.h"
 #include "cubemaptexture.h"
 
+#ifndef GL_TEXTURE_MAX_LEVEL
+    #define GL_TEXTURE_MAX_LEVEL 0x813D
+#endif
+
 CubemapTexture::CubemapTexture()
 {
 }
@@ -28,6 +32,11 @@ void CubemapTexture::bind(GLenum textureId)
 {
     glActiveTexture(textureId);
     glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
+}
+
+int CubemapTexture::getMaxMipLevel() const
+{
+    return static_cast<int>(std::floor(std::log2(std::max(width, height)))) + 1;
 }
 
 void CubemapTexture::setImage(const Image &image, int side)
@@ -67,6 +76,9 @@ void CubemapTexture::setImage(const Image &image, int side)
             break;
     }
 
+    width   = image.width;
+    height  = image.height;
+
     glTexImage2D(side,
                 0,
                 internalFormat,
@@ -78,8 +90,11 @@ void CubemapTexture::setImage(const Image &image, int side)
                 image.getPixels());
     glCheckError();
 
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+    glCheckError();
+
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 }

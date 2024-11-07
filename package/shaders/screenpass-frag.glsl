@@ -39,6 +39,7 @@ struct ReflectionMap
 {
     bool        hasReflectionMap;
     samplerCube texture;
+    int         maxMipLevel;
 };
 
 struct Occlusion
@@ -177,7 +178,7 @@ void main()
         if (hasMetallicRoughnessTexture)
              metallicRoughness = texture(metallicRoughnessTexture, uvBaseColor);
 
-        float finalMetallic  = metallicRoughness.r * metallic;
+        float finalMetallic  = metallicRoughness.b * metallic;
         float finalRoughness = metallicRoughness.g * roughness;
 
         float cosLo     = max(0.0f, dot(N, Lo));
@@ -205,18 +206,13 @@ void main()
             vec3 diffuseBRDF    = kd * albedo;
             vec3 specularBRDF   = (F * D * G) / max(Epsilon, 4.0f * cosLi * cosLo);
 
-            // Accumulate direct lighting contributions
-            directLighting += (diffuseBRDF + specularBRDF) * Lradiance * cosLi;
-
             if (reflectionMap.hasReflectionMap)
             {
-                // Calculate the reflection vector
                 vec3 I = normalize(fragPositionWorld - viewPositionWorld);
                 vec3 R = reflect(I, N);
-                vec3 envSpecular = pow(texture(reflectionMap.texture, R).rgb, vec3(2.2));
+                vec3 envColor = pow(textureLod(reflectionMap.texture, R, finalRoughness * float(reflectionMap.maxMipLevel)).rgb, vec3(2.2));
 
-                directLighting += (diffuseBRDF + specularBRDF) * Lradiance * cosLi  * 0.6;
-                directLighting += envSpecular * (1.0 - finalRoughness) * F          * 0.4;
+                directLighting += (mix(diffuseBRDF, envColor * F, finalMetallic) + specularBRDF) * Lradiance * cosLi;
             } 
             else 
             {
@@ -225,7 +221,7 @@ void main()
         }
         
         // Add some ambient light, todo: make uniform
-        float ambientStrength = -0.2;
+        float ambientStrength = 0.2;
         vec3 ambient = ambientStrength * albedo * lightColor;
 
         finalColor =  directLighting + ambient;
