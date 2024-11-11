@@ -72,6 +72,10 @@ const float Epsilon = 0.00001f;
 const float texelSize = 1.0f / 2048.0f; // Texel size for 2048x2048 shadow map
 const float lightSize = 0.1f;
 
+const vec3 rimColor = vec3(1.0, 1.0, 1.0); // Color of the rim light
+const float rimStrength = 1.0;             // Intensity of the rim effect
+const float rimWidth = 5.0;                // Controls how wide the rim effect is
+
 // GGX/Towbridge-Reitz normal distribution function.
 // Uses Disney's reparametrization of alpha = roughness^2.
 float ndfGGX(float cosLh, float roughness) 
@@ -218,10 +222,15 @@ void main()
             {
                 directLighting += (diffuseBRDF + specularBRDF) * Lradiance * cosLi;
             }
+
+            float fresnel = 1.0 - max(dot(N, Lo), 0.0);
+            float rimFactor = pow(fresnel, rimWidth);
+            vec3 rimLight = rimColor * rimFactor * rimStrength;
+            directLighting += rimLight;
         }
-        
+
         // Add some ambient light, todo: make uniform
-        float ambientStrength = 0.2;
+        float ambientStrength = 0.0;
         vec3 ambient = ambientStrength * albedo * lightColor;
 
         finalColor =  directLighting + ambient;
