@@ -40,6 +40,10 @@ void Input::end(const vec3 &position)
     lastPos = position;
 }
 
+void Input::mouseWheel(int direction)
+{
+}
+
 void Input::animate(double t)
 {
 }

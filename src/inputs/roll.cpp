@@ -31,12 +31,21 @@ void RollInput::end(const vec3& position)
     Input::end(position);
 }
 
+void RollInput::mouseWheel(int direction)
+{
+    zoomFactor += 0.1 * float(direction);
+    startAnimate();
+}
+
 bool RollInput::animate()
 {
+    zoom(zoomFactor);
     roll(rotation);
-    rotation = rotation * 0.95f;
 
-    return rotation.length() > 0.001;
+    rotation = rotation * 0.95f;
+    zoomFactor = zoomFactor * 0.60f;
+
+    return true;// rotation.length() > 0.001 && zoomFactor > 0.001;
 }
 
 void RollInput::roll(const glm::vec2 &rotation)
@@ -45,13 +54,23 @@ void RollInput::roll(const glm::vec2 &rotation)
 
     mat4 newTransform = object.getTransform();
 
-    vec3 yAxis = Space::dir(vec3(0, 1, 0), object.getSpace(), object.getParentSpace());
+    vec3 yAxis = Space::dir(vec3(0, 1, 0), Space(), object.getParentSpace());
     vec3 xAxis = Space::dir(vec3(1, 0, 0), object.getSpace(), object.getParentSpace());
 
     newTransform = translate    (mat4(1.0), -center) * newTransform;
     newTransform = rotate       (mat4(1.0), radians(rotation.x), yAxis) * newTransform;
     newTransform = rotate       (mat4(1.0), radians(rotation.y), xAxis) * newTransform;
     newTransform = translate    (mat4(1.0), center) * newTransform;
+
+    object.setTransform(newTransform);
+}
+
+void RollInput::zoom(float zoom)
+{
+    mat4 newTransform = object.getTransform();
+
+    vec3 translation    = Space::dir(vec3(0,0,1), object.getSpace(), object.getParentSpace());
+    newTransform        = translate(mat4(1.0), translation * zoom) * newTransform;
 
     object.setTransform(newTransform);
 }

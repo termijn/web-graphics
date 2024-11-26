@@ -26,6 +26,8 @@ public:
     virtual void move   (const glm::vec3& position);
     virtual void end    (const glm::vec3& position);
 
+    virtual void mouseWheel(int direction);
+
     virtual void animate(double t);
     virtual bool animate();
 

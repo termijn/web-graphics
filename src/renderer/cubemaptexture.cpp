@@ -26,6 +26,14 @@ void CubemapTexture::setCubemap(const Cubemap& cubemap)
    setImage(cubemap.negativeY, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y);
    setImage(cubemap.positiveZ, GL_TEXTURE_CUBE_MAP_POSITIVE_Z);
    setImage(cubemap.negativeZ, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z);
+
+    glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+    glCheckError();
+
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 }
 
 void CubemapTexture::bind(GLenum textureId)
@@ -89,12 +97,4 @@ void CubemapTexture::setImage(const Image &image, int side)
                 type,
                 image.getPixels());
     glCheckError();
-
-    glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
-    glCheckError();
-
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 }

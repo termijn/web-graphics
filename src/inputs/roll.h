@@ -15,13 +15,17 @@ public:
     void move   (const glm::vec3& position) override;
     void end    (const glm::vec3& position) override;
 
+    void mouseWheel(int direction) override;
+
     bool animate() override;
 
 private: 
     Object&     object;
 
-    glm::vec2 rotation;
+    glm::vec2   rotation;
+    float       zoomFactor  = 0.0;
 
     void roll(const glm::vec2& rotation);
+    void zoom(float zoom);
 
 };

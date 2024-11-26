@@ -20,6 +20,7 @@ VertexBuffer &GpuPool::get(const Renderable *renderable)
     {
         poolVertexBuffers.emplace(&renderable->mesh.vertices(), VertexBuffer());
         poolVertexBuffers[&renderable->mesh.vertices()].init();
+        poolVertexBuffers[&renderable->mesh.vertices()].setMesh(&renderable->mesh);
     }
     return poolVertexBuffers[&renderable->mesh.vertices()];
 }

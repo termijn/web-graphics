@@ -136,3 +136,11 @@ void Viewport::mouseUp(MouseButton button, const glm::vec3& position)
         activeInput = nullptr;
     }
 }
+
+void Viewport::mouseWheel(int direction)
+{
+    for(auto input: inputs)
+    {
+        input->mouseWheel(direction);
+    }
+}

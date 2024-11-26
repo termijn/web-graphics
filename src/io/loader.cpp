@@ -92,18 +92,36 @@ glm::mat4 getNodeTransformation(const tinygltf::Node& node)
 
 struct AttributeData
 {
-    const unsigned char* dataPtr    = nullptr;
-    size_t               itemCount  = 0;
-    int                  stride     = 0;
+    const unsigned char* dataPtr        = nullptr;
+    size_t               itemCount      = 0;
+    int                  stride         = 0;
+    int                  componentType  = 0;
 
     template <typename T>
     T get(int index) const
     {
-        int strideBytes = stride == -1 ? sizeof(T) : stride;
+        int strideBytes = stride == -1 || stride == 0 ? sizeof(T) : stride;
         const T* value = reinterpret_cast<const T*>(dataPtr + index * strideBytes);
         return *value;
     }
 };
+
+std::optional<AttributeData> read(const tinygltf::Model& model, tinygltf::Primitive& primitive, int accessorIndex)
+{
+	if (accessorIndex >= model.accessors.size()) return std::nullopt;
+
+	const tinygltf::Accessor*   accessor   = &model.accessors[accessorIndex];
+	const tinygltf::BufferView* bufferView = &model.bufferViews[accessor->bufferView];
+	const tinygltf::Buffer*     buffer     = &model.buffers[bufferView->buffer];
+
+	auto result = AttributeData {
+		&buffer->data[bufferView->byteOffset + accessor->byteOffset],
+		accessor->count,
+		accessor->ByteStride(*bufferView),
+        accessor->componentType
+	};
+	return result;
+}
 
 std::optional<AttributeData> read(const tinygltf::Model& model, tinygltf::Primitive& primitive, const std::string& attribute)
 {
@@ -112,16 +130,7 @@ std::optional<AttributeData> read(const tinygltf::Model& model, tinygltf::Primit
     if (primitive.attributes.find(attribute) != primitive.attributes.end()) 
     {
         int accessorIndex = primitive.attributes.at(attribute);
-
-        const tinygltf::Accessor*   accessor   = &model.accessors[accessorIndex];
-        const tinygltf::BufferView* bufferView = &model.bufferViews[accessor->bufferView];
-        const tinygltf::Buffer*     buffer     = &model.buffers[bufferView->buffer];
-
-        result = AttributeData {
-            &buffer->data[bufferView->byteOffset + accessor->byteOffset],
-            accessor->count,
-            accessor->ByteStride(*bufferView)
-        };
+		result = read(model, primitive, accessorIndex);
     }
     return result;
 }
@@ -165,52 +174,37 @@ void fillVertices(const tinygltf::Model& model, tinygltf::Primitive& primitive, 
 
 void fillIndices(const tinygltf::Model& model, tinygltf::Primitive& primitive, Mesh& mesh, uint vertexOffset)
 {
-    if (primitive.indices >= 0) 
-    {
-        const tinygltf::Accessor&   indexAccessor   = model.accessors[primitive.indices];
-        const tinygltf::BufferView& bufferView      = model.bufferViews[indexAccessor.bufferView];
-        const tinygltf::Buffer&     buffer          = model.buffers[bufferView.buffer];
+	if (primitive.indices < 0)
+	{
+		std::cout << "Primitive has no indices; might be a non-indexed model." << std::endl;
+		return;
+	}
+    
+	auto indexData = read(model, primitive, primitive.indices);
+	if (indexData == std::nullopt) return;
 
-        const uint8_t* dataPtr  = &buffer.data[bufferView.byteOffset + indexAccessor.byteOffset];
-        size_t indexCount       = indexAccessor.count;
-        size_t indexStride      = indexAccessor.ByteStride(bufferView);
+	mesh.indices().reserve(indexData->itemCount / 3);
 
-        mesh.indices().reserve(indexCount / 3);
-        for (size_t i = 0; i < indexCount; i += 3) 
-        {
-            u32vec3 triangle;
+	for (size_t i = 0; i < indexData->itemCount; i += 3) 
+	{
+		u32vec3 triangle;
 
-            if (indexAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) 
-            {
-                std::cout << "Indices as TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT" << std::endl;
-                if (indexStride == -1) 
-                    indexStride = sizeof(glm::uint16);
+		if (indexData->componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) 
+		{
+			triangle.x = indexData->get<uint16>(i);
+			triangle.y = indexData->get<uint16>(i + 1);
+			triangle.z = indexData->get<uint16>(i + 2);;
 
-                triangle.x = glm::uint32(*reinterpret_cast<const glm::uint16*>(dataPtr));
-                triangle.y = glm::uint32(*reinterpret_cast<const glm::uint16*>(dataPtr + indexStride));
-                triangle.z = glm::uint32(*reinterpret_cast<const glm::uint16*>(dataPtr + indexStride * 2));
+		} 
+		else if (indexData->componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT) 
+		{
+			triangle.x = indexData->get<uint32>(i);
+			triangle.y = indexData->get<uint32>(i + 1);
+			triangle.z = indexData->get<uint32>(i + 2);
+		}
 
-            } 
-            else if (indexAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT) 
-            {
-                std::cout << "Indices as TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT" << std::endl;
-
-                if (indexStride == -1) 
-                    indexStride = sizeof(glm::uint32);
-
-                triangle.x = *reinterpret_cast<const glm::uint32*>(dataPtr);
-                triangle.y = *reinterpret_cast<const glm::uint32*>(dataPtr + indexStride);
-                triangle.z = *reinterpret_cast<const glm::uint32*>(dataPtr + indexStride * 2);
-            }
-
-            mesh.indices().emplace_back(triangle + u32vec3(vertexOffset));
-            dataPtr += indexStride * 3;
-        }
-    } 
-    else 
-    {
-        std::cout << "Primitive has no indices; might be a non-indexed model." << std::endl;
-    }
+		mesh.indices().emplace_back(triangle + u32vec3(vertexOffset));
+	}
 }
 
 std::vector<vec2> getUVSet(int uvIndex, const tinygltf::Model& model)

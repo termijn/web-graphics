@@ -41,7 +41,7 @@ public:
         scene = loadModelObjects("/package/models/DamagedHelmet.glb", sceneParent);
 
         for (auto& renderable: scene->all())
-            renderable->getRenderable().material.reflectionMap = &reflectionMap;
+           renderable->getRenderable().material.reflectionMap = &reflectionMap;
 
         sceneParent  .setTransform(translate(scale(mat4(1.0), vec3(5.0)), vec3(0.0, 0.0, 0.0)));
         floorObject  .setTransform(scale(translate(mat4(1.0), vec3(0, 0, -60)), vec3(500.0, 500.0, 1.0)));
@@ -52,6 +52,7 @@ public:
         float diameter   = Space::dir(box.max - box.min, Space(), camera.getParentSpace()).length();
 
         camera.lookAt(sceneCenter + vec3(0, 0, diameter * 5), sceneCenter, vec3(0, 1, 0));
+        //camera.lookAt(vec3(0, 0, -5), vec3(0,0,0), vec3(0, 1, 0));
 
         viewport.attachCamera       (camera);
         viewport.attachRenderable   (floorRenderable);

@@ -44,6 +44,10 @@ void Scheduler::tick()
             case SDL_QUIT:
                 emscripten_cancel_main_loop();
                 break;
+            case SDL_MOUSEWHEEL:
+                for(auto viewport: viewports)
+                    viewport->mouseWheel(event.wheel.y);
+                break;
             case SDL_MOUSEMOTION:
                 {
                     for(auto viewport: viewports)

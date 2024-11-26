@@ -49,11 +49,10 @@ void RenderPass::render(const std::vector<const Renderable *> &renderables) cons
     for (const Renderable* renderable : renderables)
     {
         VertexBuffer& vertexBuffer = gpuPool.get(renderable);
-        vertexBuffer.setMesh(&renderable->mesh);
         vertexBuffer.bind(program);
 
         setUniforms(*renderable);
-    
+
         glDrawElements(GL_TRIANGLES, vertexBuffer.getMesh().indices().size() * 3, GL_UNSIGNED_INT, 0);
         glCheckError();
     }

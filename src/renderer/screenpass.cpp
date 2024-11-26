@@ -12,7 +12,7 @@ using namespace glm;
 ScreenPass::ScreenPass(GpuPool& gpuPool_)
     : RenderPass("/package/shaders/screenpass-vertex.glsl", "/package/shaders/screenpass-frag.glsl", gpuPool_)
 {
-    nrPoissonSamples = poissonImage.makePoissonDisc(48, 48, 5);
+    nrPoissonSamples = poissonImage.makePoissonDisc(48, 48, 3);
 }
 
 ScreenPass::~ScreenPass()
@@ -72,6 +72,7 @@ void ScreenPass::renderPre(const glm::mat4 &view, const glm::mat4 &projection)
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, depthTexture);
 
+    glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
 }
 
@@ -123,7 +124,7 @@ void ScreenPass::setUniforms(const Renderable &renderable) const
 
     if (material.metallicRoughness.has_value())
     {
-        Texture& texture = gpuPool.get(&material.metallicRoughness.value(), Texture::Interpolation::Nearest);
+        Texture& texture = gpuPool.get(&material.metallicRoughness.value(), Texture::Interpolation::Linear);
         glUniform1i(locationTextureMetallicRoughness, 2);
         glUniform1i(locationHasMetallicRoughnessTexture, 1);
         texture.bind(GL_TEXTURE2);
@@ -149,7 +150,7 @@ void ScreenPass::setUniforms(const Renderable &renderable) const
 
     if (material.normalMap.has_value()) 
     {
-        Texture& texture = gpuPool.get(&material.normalMap.value(), Texture::Interpolation::Nearest);
+        Texture& texture = gpuPool.get(&material.normalMap.value(), Texture::Interpolation::Linear);
         glUniform1i(locationNormalsTexture, 4);
         texture.bind(GL_TEXTURE4);
 
@@ -173,14 +174,12 @@ void ScreenPass::setUniforms(const Renderable &renderable) const
     }
     glUniform1i(locationHasEmmissiveTexture, material.emissive.has_value() ? 1 : 0);
 
-
     if (material.reflectionMap.has_value())
     {
         CubemapTexture& texture = gpuPool.get(material.reflectionMap.value());
-        glUniform1i(locationReflectionMap, 7);
         int maxLevel = texture.getMaxMipLevel();
-        std::cout << "Max level for environment map: " << maxLevel << std::endl;
         glUniform1i(locationMaxMipLevel, maxLevel);
+        glUniform1i(locationReflectionMap, 7);
         texture.bind(GL_TEXTURE7);
     }
     glUniform1i(locationHasReflectionMap, material.reflectionMap.has_value() ? 1 : 0);

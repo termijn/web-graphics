@@ -39,6 +39,7 @@ protected:
     void mouseDown  (MouseButton button, const glm::vec3& position);
     void mouseMove  (const glm::vec3& position);
     void mouseUp    (MouseButton button, const glm::vec3& position);
+    void mouseWheel (int direction);
 
 private:
     Scheduler&              scheduler;

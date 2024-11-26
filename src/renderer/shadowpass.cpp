@@ -59,6 +59,8 @@ void ShadowPass::renderPre(const glm::mat4 &view_, const glm::mat4 &projection_)
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
     glViewport(0, 0, width, height);
     glClear(GL_DEPTH_BUFFER_BIT);
+    
+    glEnable(GL_CULL_FACE);
     glCullFace(GL_FRONT);
 }
 
