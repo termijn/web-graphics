@@ -45,7 +45,7 @@ bool RollInput::animate()
     rotation = rotation * 0.95f;
     zoomFactor = zoomFactor * 0.60f;
 
-    return true;// rotation.length() > 0.001 && zoomFactor > 0.001;
+    return rotation.length() > 0.001 && zoomFactor > 0.001;
 }
 
 void RollInput::roll(const glm::vec2 &rotation)

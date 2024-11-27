@@ -72,8 +72,8 @@ const float Epsilon = 0.00001f;
 const float texelSize = 1.0f / 2048.0f; // Texel size for 2048x2048 shadow map
 
 const vec3 rimColor = vec3(1.0, 1.0, 1.0); // Color of the rim light
-const float rimStrength = 0.0;             // Intensity of the rim effect
-const float rimWidth = 32.0;                // Controls how wide the rim effect is
+const float rimStrength = 0.5;             // Intensity of the rim effect
+const float rimWidth = 8.0;                // Controls how wide the rim effect is
 
 // GGX normal distribution function.
 float ndfGGX(float cosLh, float alpha) {
@@ -176,16 +176,6 @@ vec3 uncharted2_tonemap_partial(vec3 x)
     return ((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F))-E/F;
 }
 
-vec3 uncharted2_filmic(vec3 v)
-{
-    float exposure_bias = 4.0;
-    vec3 curr = uncharted2_tonemap_partial(v * exposure_bias);
-
-    vec3 W = vec3(11.2f);
-    vec3 white_scale = vec3(1.0f) / uncharted2_tonemap_partial(W);
-    return curr * white_scale;
-}
-
 vec3 aces_approx(vec3 v)
 {
     v *= 0.6f;
@@ -237,25 +227,26 @@ void main()
             vec3  kd = mix(vec3(1.0f) - F, vec3(0.0f), finalMetallic);
 
             vec3 diffuseBRDF    = kd * albedo;
-            vec3 specularBRDF = F * D * G / (4.0 * cosLi * cosLo + 0.001);
-            specularBRDF = mix(specularBRDF, vec3(0.0), finalRoughness);
+            vec3 specularBRDF   = F * D * G / (4.0 * cosLi * cosLo + 0.001);
+            specularBRDF        = mix(specularBRDF, vec3(0.0), finalRoughness);
 
-            vec3 envReflection = vec3(0.0);
+            float   fresnel         = 1.0 - max(dot(N, Lo), 0.0);
+            vec3    envReflection   = vec3(0.0);
             if (reflectionMap.hasReflectionMap)
             {
                 vec3  reflected  = reflect(-Lo, N);
                 float  mipLevel  = finalRoughness * float(reflectionMap.maxMipLevel);
-                vec3 specColor = textureLod(reflectionMap.texture, reflected, mipLevel).rgb;
+                vec3 specColor   = textureLod(reflectionMap.texture, reflected, mipLevel).rgb;
                 envReflection    = F * pow(specColor, vec3(2.2));
 
-                directLighting += (mix(diffuseBRDF, envReflection, finalMetallic * (1.0 - finalRoughness)) + specularBRDF) * lightColor * cosLi;
+                directLighting += (mix(diffuseBRDF, envReflection, finalMetallic * fresnel) + specularBRDF) * lightColor * cosLi;
             } 
             else
             {
                 directLighting += (diffuseBRDF +  specularBRDF) * lightColor * cosLi;
             }
 
-            float   fresnel = 1.0 - max(dot(N, Lo), 0.0);
+            
             float rimFactor = pow(fresnel, rimWidth);
             vec3   rimLight = rimColor * rimFactor * rimStrength;
 
@@ -273,7 +264,7 @@ void main()
     vec3 biasedFragPos      = fragPositionWorld + (normalize(Normal) * normalOffset);
     vec4 fragInLightSpace   = toLightSpace(vec4(biasedFragPos, 1.0));
     
-    float shadow = pcf(fragInLightSpace.xyz, 16) * 0.7;
+    float shadow = pcf(fragInLightSpace.xyz, 16) * 0.8;
 
     finalColor  = finalColor * (1.0 - shadow);
 
@@ -284,8 +275,8 @@ void main()
         finalColor *= mix(1.0, occlusionFactor, strength);
     }
 
-    const float exposureStops = 1.8;
-    finalColor = finalColor * pow(2.0, exposureStops);
+    const float exposureStops = 2.0;
+    finalColor  = finalColor * pow(2.0, exposureStops);
     finalColor  = aces_approx(finalColor); 
     FragColor   = vec4(pow(finalColor, vec3(1.0 / 2.2)), 1.0f); 
 }

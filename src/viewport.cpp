@@ -73,7 +73,6 @@ void Viewport::render()
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, winWidth, winHeight);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     mat4 shadowProjection = shadowPass.getProjection();
     Space projectionSpace = camera->getProjectionSpace((float)winWidth / (float)winHeight);
