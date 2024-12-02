@@ -30,9 +30,6 @@ protected:
     const std::string vertexShaderFileName;
     const std::string fragmentShaderFileName;
 
-    GLuint      compileShader (GLenum type, const GLchar* source);
-    std::string readFile(const std::string& name) const;
-
     GpuPool&        gpuPool;
     RenderTarget&   renderTarget;
 

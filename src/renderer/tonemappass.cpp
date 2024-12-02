@@ -30,6 +30,9 @@ void TonemapPass::init()
 
     quad.quad();
     vertexBuffer.setMesh(&quad);
+
+    glUseProgram(program);
+    glUniform1i (locationHdrTexture, 9);
 }
 
 void TonemapPass::render()
@@ -46,7 +49,6 @@ void TonemapPass::render()
     glActiveTexture(GL_TEXTURE9);
     glBindTexture(GL_TEXTURE_2D, hdrTexture);
 
-    glUniform1i (locationHdrTexture, 9);
     glUniform2fv(locationViewportSize, 1, value_ptr(renderTarget.getSize()));
     glUniform1f (locationExposure, 1.0);
 

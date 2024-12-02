@@ -37,7 +37,7 @@ CanvasTarget::CanvasTarget(const std::string &canvasId)
     SDL_GL_SetAttribute     (SDL_GL_CONTEXT_MINOR_VERSION, 0);
     SDL_GL_SetSwapInterval  (1);
     SDL_GL_SetAttribute     (SDL_GL_DOUBLEBUFFER, 1);
-    SDL_GL_SetAttribute     (SDL_GL_DEPTH_SIZE, 24);
+    SDL_GL_SetAttribute     (SDL_GL_DEPTH_SIZE, 8);
 
     SDL_GLContext glc = SDL_GL_CreateContext(window);
     printf("INFO: GL version: %s\n", glGetString(GL_VERSION));
@@ -110,7 +110,7 @@ void TextureTarget::setSize(glm::vec2 size_)
 
         glGenTextures(1, &colorTexture);
         glBindTexture(GL_TEXTURE_2D, colorTexture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F_EXT, size_.x, size_.y, 0, GL_RGBA, GL_FLOAT, 0);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F_EXT, size_.x, size_.y, 0, GL_RGBA, GL_FLOAT, 0);
 
         glCheckError();
 
