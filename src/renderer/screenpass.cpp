@@ -9,8 +9,9 @@
 
 using namespace glm;
 
-ScreenPass::ScreenPass(GpuPool& gpuPool_)
-    : RenderPass("/package/shaders/screenpass-vertex.glsl", "/package/shaders/screenpass-frag.glsl", gpuPool_)
+ScreenPass::ScreenPass(GpuPool& gpuPool_, DepthTarget& shadowTarget_, RenderTarget& renderTarget_)
+    : RenderPass("/package/shaders/screenpass-vertex.glsl", "/package/shaders/screenpass-frag.glsl", gpuPool_, renderTarget_)
+    , shadowTarget(shadowTarget_)
 {
     nrPoissonSamples = poissonImage.makePoissonDisc(48, 48, 3);
 }
@@ -67,19 +68,18 @@ void ScreenPass::renderPre(const glm::mat4 &view, const glm::mat4 &projection)
 {
     RenderPass::renderPre(view, projection);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, depthTexture);
+    glBindTexture(GL_TEXTURE_2D, shadowTarget.getDepthTexture());
 
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void ScreenPass::setShadow(const mat4 &worldToLight, const vec3& lightPosWorld_, GLint depthTexture_)
+void ScreenPass::setShadow(const mat4 &worldToLight, const vec3& lightPosWorld_)
 {
     shadowMapViewProjection = worldToLight;
-    depthTexture            = depthTexture_;
     lightPosWorld           = lightPosWorld_;
 }
 
@@ -107,7 +107,6 @@ void ScreenPass::setUniforms(const Renderable &renderable) const
     glUniformMatrix4fv(locationModel, 1, GL_FALSE, value_ptr(model));
 
     glUniformMatrix4fv(locationShadowVP, 1, GL_FALSE, value_ptr(shadowMapViewProjection));
-
     glUniform1i(locationDepthTexture, 0);
 
     if (material.baseColorTexture.has_value()) 

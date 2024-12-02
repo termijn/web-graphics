@@ -22,8 +22,10 @@ public:
 private: 
     Object&     object;
 
-    glm::vec2   rotation;
+    glm::vec2   rotation = glm::vec2(0.0);
     float       zoomFactor  = 0.0;
+
+    
 
     void roll(const glm::vec2& rotation);
     void zoom(float zoom);

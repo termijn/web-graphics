@@ -10,8 +10,9 @@
 
 using namespace glm;
 
-RenderPass::RenderPass(const std::string &vertexShaderFileName_, const std::string &fragmentShaderFileName_, GpuPool& gpuPool_)
+RenderPass::RenderPass(const std::string &vertexShaderFileName_, const std::string &fragmentShaderFileName_, GpuPool& gpuPool_, RenderTarget& renderTarget_)
     : gpuPool               (gpuPool_)
+    , renderTarget          (renderTarget_)
     , vertexShaderFileName  (vertexShaderFileName_)
     , fragmentShaderFileName(fragmentShaderFileName_)
 {
@@ -40,6 +41,8 @@ void RenderPass::renderPre(const glm::mat4 &view_, const glm::mat4 &projection_)
 
     glUseProgram(program);
 
+    renderTarget.beginRender();
+
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
 }
@@ -56,6 +59,12 @@ void RenderPass::render(const std::vector<const Renderable *> &renderables) cons
         glDrawElements(GL_TRIANGLES, vertexBuffer.getMesh().indices().size() * 3, GL_UNSIGNED_INT, 0);
         glCheckError();
     }
+
+    renderTarget.endRender();
+}
+
+void RenderPass::setUniforms(const Renderable &renderable) const
+{
 }
 
 GLuint RenderPass::compileShader(GLenum type, const GLchar *source)

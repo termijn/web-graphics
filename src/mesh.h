@@ -49,7 +49,8 @@ public:
     void cube       (float size);
     void noisySphere(float radius, int rings, int sectors, float noiseAmplitude);
     void knot       (float radius, float tubeRadius, int segments, int sides);
-    void sphere(float radius, int rings, int sectors);
+    void sphere     (float radius, int rings, int sectors);
+    void quad       ();
 
 private:
     std::shared_ptr<std::vector<Vertex>>        vertexData  = std::make_shared<std::vector<Vertex>>();

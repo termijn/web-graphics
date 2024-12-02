@@ -1,11 +1,8 @@
 #pragma once
 
 #include <map>
-
-#include <SDL.h>
-#include <SDL_opengles2.h>
-
 #include <chrono>
+
 #include <glm/glm.hpp>
 
 #include "scheduler.h"
@@ -15,6 +12,8 @@
 #include "renderer/gpupool.h"
 #include "renderer/screenpass.h"
 #include "renderer/shadowpass.h"
+#include "renderer/tonemappass.h"
+#include "renderer/rendertarget.h"
 
 #include "input.h"
 
@@ -43,14 +42,18 @@ protected:
 
 private:
     Scheduler&              scheduler;
-    SDL_Window*             window  = nullptr;
     const CameraObject*     camera  = nullptr;
     const Object*           light   = nullptr;
 
     GpuPool     gpuPool;
-    
-    ScreenPass  screenPass  = ScreenPass(gpuPool);
-    ShadowPass  shadowPass  = ShadowPass(gpuPool);
+
+    CanvasTarget  canvasTarget = CanvasTarget("canvas");
+    TextureTarget textureTarget;
+    DepthTarget   shadowTarget;
+
+    ShadowPass  shadowPass  = ShadowPass(gpuPool, shadowTarget);
+    ScreenPass  screenPass  = ScreenPass(gpuPool, shadowTarget, textureTarget);
+    TonemapPass tonemapPass = TonemapPass(gpuPool, textureTarget, canvasTarget);
 
     MouseButton pressedButtons = MouseButton::None;
 

@@ -5,6 +5,8 @@
 #include <glm/glm.hpp>
 
 #include "renderer/gpupool.h"
+#include "renderer/rendertarget.h"
+
 #include "renderable.h"
 
 class RenderPass
@@ -13,7 +15,8 @@ public:
     RenderPass(
         const std::string&  vertexShaderFileName,
         const std::string&  fragmentShaderFileName,
-        GpuPool&            gpuPool);
+        GpuPool&            gpuPool, 
+        RenderTarget&       renderTarget);
     virtual ~RenderPass();
 
     virtual void init();
@@ -22,7 +25,7 @@ public:
     virtual void render     (const std::vector<const Renderable*>& renderables) const;
 
 protected:
-    virtual void setUniforms(const Renderable& renderable) const = 0;
+    virtual void setUniforms(const Renderable& renderable) const;
 
     const std::string vertexShaderFileName;
     const std::string fragmentShaderFileName;
@@ -30,7 +33,8 @@ protected:
     GLuint      compileShader (GLenum type, const GLchar* source);
     std::string readFile(const std::string& name) const;
 
-    GpuPool& gpuPool;
+    GpuPool&        gpuPool;
+    RenderTarget&   renderTarget;
 
     GLuint vertexShader     = 0;
     GLuint fragmentShader   = 0;

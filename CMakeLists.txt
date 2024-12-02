@@ -30,9 +30,10 @@ if (DEFINED EMSCRIPTEN)
         --preload-file=${CMAKE_CURRENT_SOURCE_DIR}/package@/package
         )
 
-    file(GLOB_RECURSE SHADER_REFERENCES ${CMAKE_CURRENT_SOURCE_DIR}/package/shaders/*.glsl)
-    file(GLOB_RECURSE MODEL_REFERENCES ${CMAKE_CURRENT_SOURCE_DIR}/package/models/*.glb)
+    file(GLOB_RECURSE SHADER_REFERENCES  ${CMAKE_CURRENT_SOURCE_DIR}/package/shaders/*.glsl)
+    file(GLOB_RECURSE MODEL_REFERENCES   ${CMAKE_CURRENT_SOURCE_DIR}/package/models/*.glb)
     file(GLOB_RECURSE CUBEMAP_REFERENCES ${CMAKE_CURRENT_SOURCE_DIR}/package/cubemap/*.jpg)
+
     set_property(TARGET Viewer PROPERTY LINK_DEPENDS 
         ${SHADER_REFERENCES}
         ${MODEL_REFERENCES}

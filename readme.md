@@ -19,9 +19,9 @@ See the renderer in action at [Github Pages](https://termijn.github.io/index.htm
 - Environment mapping
 - gltf loading support
 - gltf binary scene loading
+- HDR and tonemapping
 
 ## Planned features
-- HDR and tonemapping
 - Mesh instancing
 - Multiple lights and Light intensity / color
 - Picking

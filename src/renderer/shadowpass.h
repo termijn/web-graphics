@@ -4,11 +4,12 @@
 
 #include "renderable.h"
 #include "renderer/renderpass.h"
+#include "renderer/rendertarget.h"
 
 class ShadowPass: public RenderPass
 {
 public:
-    ShadowPass(GpuPool& gpuPool);
+    ShadowPass(GpuPool& gpuPool, DepthTarget& renderTarget);
     ~ShadowPass();
 
     void init() override;
@@ -28,9 +29,6 @@ private:
     int width  = 2048;
     int height = 2048;
     
-    GLuint depthTexture;
-    GLuint framebuffer;
-
     GLint  locationViewUniform;
     GLint  locationLightDirection;
     GLint  locationProjection;

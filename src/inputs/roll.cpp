@@ -33,7 +33,7 @@ void RollInput::end(const vec3& position)
 
 void RollInput::mouseWheel(int direction)
 {
-    zoomFactor += 0.1 * float(direction);
+    zoomFactor += 0.2 * float(direction);
     startAnimate();
 }
 
@@ -55,13 +55,13 @@ void RollInput::roll(const glm::vec2 &rotation)
     mat4 newTransform = object.getTransform();
 
     vec3 yAxis = Space::dir(vec3(0, 1, 0), Space(), object.getParentSpace());
-    vec3 xAxis = Space::dir(vec3(1, 0, 0), object.getSpace(), object.getParentSpace());
-
     newTransform = translate    (mat4(1.0), -center) * newTransform;
     newTransform = rotate       (mat4(1.0), radians(rotation.x), yAxis) * newTransform;
+    object.setTransform(newTransform);
+
+    vec3 xAxis = Space::dir(vec3(1, 0, 0), object.getSpace(), object.getParentSpace());
     newTransform = rotate       (mat4(1.0), radians(rotation.y), xAxis) * newTransform;
     newTransform = translate    (mat4(1.0), center) * newTransform;
-
     object.setTransform(newTransform);
 }
 

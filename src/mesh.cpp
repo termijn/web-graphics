@@ -312,6 +312,17 @@ void Mesh::sphere(float radius, int rings, int sectors)
     }
 }
 
+void Mesh::quad()
+{
+    vertices().emplace_back(Vertex{ .position = glm::vec4(-1, -1, 0, 1), .uv = glm::vec2(0.0f, 0.0f) });
+    vertices().emplace_back(Vertex{ .position = glm::vec4(1, -1, 0, 1), .uv = glm::vec2(1.0f, 0.0f) });
+    vertices().emplace_back(Vertex{ .position = glm::vec4(1, 1, 0, 1), .uv = glm::vec2(1.0f, 1.0f) });
+    vertices().emplace_back(Vertex{ .position = glm::vec4(-1, 1, 0, 1), .uv = glm::vec2(0.0f, 1.0f) });
+    
+    indices().push_back(u16vec3(0, 1, 2));    
+    indices().push_back(u16vec3(2, 3, 0));
+}
+
 void Mesh::copy(const Mesh &rhs)
 {
     vertexData  = rhs.vertexData;

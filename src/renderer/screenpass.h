@@ -7,23 +7,26 @@
 #include "renderer/renderpass.h"
 #include "renderer/vertexbuffer.h"
 #include "renderer/gpupool.h"
+#include "renderer/rendertarget.h"
 #include "renderable.h"
 #include "image.h"
 
 class ScreenPass: public RenderPass
 {
 public:
-    ScreenPass(GpuPool& gpuPool);
+    ScreenPass(GpuPool& gpuPool, DepthTarget& shadowTarget, RenderTarget& renderTarget);
     ~ScreenPass();
 
     void init() override;
 
     void renderPre(const glm::mat4& view, const glm::mat4& projection) override;
 
-    void setShadow(const glm::mat4& worldToLight, const glm::vec3& lightPosWorld, GLint depthTexture);
+    void setShadow(const glm::mat4& worldToLight, const glm::vec3& lightPosWorld);
 
 protected:
     void setUniforms(const Renderable& renderable) const override;
+
+    DepthTarget& shadowTarget;
 
     GLint  locationViewUniform;
     

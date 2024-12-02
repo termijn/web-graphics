@@ -67,13 +67,12 @@ out vec4 FragColor;
 const vec3 Fdielectric = vec3(0.4f);
 
 const float M_PI = 3.1415926535897932384f;
-const float Epsilon = 0.00001f;
 
 const float texelSize = 1.0f / 2048.0f; // Texel size for 2048x2048 shadow map
 
-const vec3 rimColor = vec3(1.0, 1.0, 1.0); // Color of the rim light
-const float rimStrength = 0.5;             // Intensity of the rim effect
-const float rimWidth = 8.0;                // Controls how wide the rim effect is
+const vec3      rimColor = vec3(1.0, 1.0, 1.0); // Color of the rim light
+const float  rimStrength = 0.1;                   // Intensity of the rim effect
+const float     rimWidth = 2.0;                   // Controls how wide the rim effect is
 
 // GGX normal distribution function.
 float ndfGGX(float cosLh, float alpha) {
@@ -158,35 +157,6 @@ vec3 getNormalMap(vec3 surfaceNormal)
     return result;
 }
 
-vec3 romBinDaHouseToneMapping(vec3 color, float gamma)
-{
-	color = exp(-1.0 / (2.72 * color + 0.15));
-	color = pow(color, vec3((1.0 / gamma)));
-	return color;
-}
-
-vec3 uncharted2_tonemap_partial(vec3 x)
-{
-    float A = 0.15f;
-    float B = 0.50f;
-    float C = 0.10f;
-    float D = 0.20f;
-    float E = 0.02f;
-    float F = 0.30f;
-    return ((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F))-E/F;
-}
-
-vec3 aces_approx(vec3 v)
-{
-    v *= 0.6f;
-    float a = 2.51f;
-    float b = 0.03f;
-    float c = 2.43f;
-    float d = 0.59f;
-    float e = 0.14f;
-    return clamp((v*(a*v+b))/(v*(c*v+d)+e), 0.0f, 1.0f);
-}
-
 void main() 
 {
     vec3 albedo = baseColor;
@@ -239,17 +209,15 @@ void main()
                 vec3 specColor   = textureLod(reflectionMap.texture, reflected, mipLevel).rgb;
                 envReflection    = F * pow(specColor, vec3(2.2));
 
-                directLighting += (mix(diffuseBRDF, envReflection, finalMetallic * fresnel) + specularBRDF) * lightColor * cosLi;
+                directLighting += (mix(diffuseBRDF, envReflection, finalMetallic * F) + specularBRDF) * lightColor * cosLi;
             } 
             else
             {
                 directLighting += (diffuseBRDF +  specularBRDF) * lightColor * cosLi;
             }
 
-            
             float rimFactor = pow(fresnel, rimWidth);
             vec3   rimLight = rimColor * rimFactor * rimStrength;
-
             directLighting += rimLight;
         }
 
@@ -275,8 +243,5 @@ void main()
         finalColor *= mix(1.0, occlusionFactor, strength);
     }
 
-    const float exposureStops = 2.0;
-    finalColor  = finalColor * pow(2.0, exposureStops);
-    finalColor  = aces_approx(finalColor); 
-    FragColor   = vec4(pow(finalColor, vec3(1.0 / 2.2)), 1.0f); 
+    FragColor   = vec4(finalColor, 1.0f); 
 }
